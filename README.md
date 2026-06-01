@@ -113,6 +113,16 @@ See [PROJECT-HANDOVER.md](PROJECT-HANDOVER.md) for a full architectural overview
 - **AV1 on AMD RDNA 4** (RX 7000+/9000+) requires ffmpeg ≥ 7.0 and Adrenalin 24.x+ for hardware acceleration. Older combos fall back to slow CPU.
 - **`cambi` action** is not supported on Windows (the upstream code uses named pipes via `mkfifo`, which doesn't exist on Windows).
 
+## Not yet tested
+
+The following code paths exist and the dropdown auto-detects them, but they have **not** been verified by the maintainer on real hardware:
+
+- **NVIDIA NVENC** codecs (`h264_nvenc`, `hevc_nvenc`, `av1_nvenc`) — patches are applied, encoder availability is detected, but end-to-end encoding has not been run on an NVIDIA card.
+- **Intel QSV** codecs (`h264_qsv`, `hevc_qsv`, `av1_qsv`) — patches are applied (`-global_quality` mapping), but no Intel Arc / iGPU testing has been done.
+- **CPU libx264** and **libsvtav1** — work in theory and follow the upstream dynamic-crf default flow, but the maintainer primarily tested `libx265` and `hevc_amf` paths.
+
+If you run these on your hardware and they work / don't work, please open an issue or PR so we can confirm and update this section.
+
 ## Contributors & Acknowledgments
 
 - **[Turkushan](https://github.com/turkushan490)** — project owner, design, requirements, testing, deployment
