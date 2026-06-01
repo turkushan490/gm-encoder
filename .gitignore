@@ -24,6 +24,10 @@ PROJECT-HANDOVER-COMPACT.md
 # Archive of old CLI versions
 archive/
 
+# Local snapshots / test copies
+glm/
+text/
+
 # OS / IDE
 Thumbs.db
 .DS_Store
