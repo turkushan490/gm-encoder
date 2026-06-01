@@ -113,6 +113,17 @@ See [PROJECT-HANDOVER.md](PROJECT-HANDOVER.md) for a full architectural overview
 - **AV1 on AMD RDNA 4** (RX 7000+/9000+) requires ffmpeg ≥ 7.0 and Adrenalin 24.x+ for hardware acceleration. Older combos fall back to slow CPU.
 - **`cambi` action** is not supported on Windows (the upstream code uses named pipes via `mkfifo`, which doesn't exist on Windows).
 
+## Contributors & Acknowledgments
+
+- **[Turkushan](https://github.com/turkushan490)** — project owner, design, requirements, testing, deployment
+- **[Claude](https://www.anthropic.com/claude)** (Anthropic) — AI pair-programming partner. Most of the source code (GUI scaffolding, encoder wrapper module, build pipeline, installer patches, error handling, threading model, settings persistence) was written collaboratively with Claude across many iterations of design, debugging and refactoring.
+
+This project is an honest example of human + AI collaboration: the requirements, taste, real-world testing on AMD/NVIDIA hardware and final acceptance came from a human; the boilerplate, architectural patterns and a lot of the diagnostic work came from the AI. See [PROJECT-HANDOVER.md](PROJECT-HANDOVER.md) for the kind of context-handover document that lets a future AI session continue the work.
+
+## Upstream credit
+
+Big thanks to [**Terran Vigil**](https://github.com/terranvigil) for [dynamic-crf](https://github.com/terranvigil/dynamic-crf) — the VMAF-targeted bisection encoder that does the actual heavy lifting. This project would not exist without that work.
+
 ## License
 
 MIT. See [LICENSE](LICENSE). Upstream `dynamic-crf` is also MIT-licensed by Terran Vigil — see [their LICENSE](https://github.com/terranvigil/dynamic-crf/blob/main/LICENSE).
