@@ -4,17 +4,7 @@ A Windows GUI for [terranvigil/dynamic-crf](https://github.com/terranvigil/dynam
 
 Built with PowerShell + WPF, compiled to a single self-contained `.exe` (~160 KB) via [`ps2exe`](https://github.com/MScholtes/PS2EXE).
 
-## Screenshots
-
-### Idle — ready to encode
-Pick input/output folders, choose a codec (12 options auto-detected), set VMAF target and tolerance, drop videos in `input\`, click START.
-
-![GM Encoder idle state](docs/screenshot-idle.png)
-
-### Running — live progress + CPU/GPU usage
-While encoding: live CPU/GPU usage bars in the header, phase-weighted overall progress, per-step indicator, and streaming console output from dynamic-crf + ffmpeg. Pause halts after the current file completes; Stop kills everything immediately via Job Object.
-
-![GM Encoder running](docs/screenshot-running.png)
+![GUI](docs/screenshot.png)
 
 ## Features
 
@@ -112,17 +102,6 @@ See [PROJECT-HANDOVER.md](PROJECT-HANDOVER.md) for a full architectural overview
 - **AMD AMF on already-compressed sources** can produce *larger* output than the input. This is inherent AMF bit-inefficiency, not a bug. For pre-compressed content, prefer `libx265` (CPU) or `libsvtav1` (CPU) for actual compression gain.
 - **AV1 on AMD RDNA 4** (RX 7000+/9000+) requires ffmpeg ≥ 7.0 and Adrenalin 24.x+ for hardware acceleration. Older combos fall back to slow CPU.
 - **`cambi` action** is not supported on Windows (the upstream code uses named pipes via `mkfifo`, which doesn't exist on Windows).
-
-## Contributors & Acknowledgments
-
-- **[Turkushan](https://github.com/turkushan490)** — project owner, design, requirements, testing, deployment
-- **[Claude](https://www.anthropic.com/claude)** (Anthropic) — AI pair-programming partner. Most of the source code (GUI scaffolding, encoder wrapper module, build pipeline, installer patches, error handling, threading model, settings persistence) was written collaboratively with Claude across many iterations of design, debugging and refactoring.
-
-This project is an honest example of human + AI collaboration: the requirements, taste, real-world testing on AMD/NVIDIA hardware and final acceptance came from a human; the boilerplate, architectural patterns and a lot of the diagnostic work came from the AI. See [PROJECT-HANDOVER.md](PROJECT-HANDOVER.md) for the kind of context-handover document that lets a future AI session continue the work.
-
-## Upstream credit
-
-Big thanks to [**Terran Vigil**](https://github.com/terranvigil) for [dynamic-crf](https://github.com/terranvigil/dynamic-crf) — the VMAF-targeted bisection encoder that does the actual heavy lifting. This project would not exist without that work.
 
 ## License
 
