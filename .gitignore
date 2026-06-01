@@ -1,7 +1,7 @@
 # Build artifacts
-asa-gui.exe
-asa-gui-bundled.ps1
-asa-gui-error.log
+gm-encoder.exe
+gm-encoder-bundled.ps1
+gm-encoder-error.log
 debug-bundled.ps1
 install.log
 

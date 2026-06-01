@@ -1,4 +1,4 @@
-# ASA Video Encoder
+# GM Encoder
 
 A Windows GUI for [terranvigil/dynamic-crf](https://github.com/terranvigil/dynamic-crf) that wraps the VMAF-targeted encoding workflow with a polished interface. Patches the upstream Go source at install time to fix Windows path issues and add support for AMD/Intel hardware encoders.
 
@@ -15,7 +15,7 @@ Built with PowerShell + WPF, compiled to a single self-contained `.exe` (~160 KB
 - **Source disposal** options: keep, move to `input\done\`, or permanent delete (with confirm)
 - **Pause / Stop** during encoding (Stop kills child ffmpeg via Windows Job Object)
 - **Live progress** — overall + step bars, CPU/GPU usage monitoring, streaming log console
-- **Settings persistence** — folders, codec, options remembered in `%APPDATA%\AsaEncoder\settings.json`
+- **Settings persistence** — folders, codec, options remembered in `%APPDATA%\GmEncoder\settings.json`
 - **One-click install** — embedded installer downloads Go, ffmpeg, MediaInfo, patches dynamic-crf source, builds the binary
 
 ## Attribution
@@ -24,7 +24,7 @@ This project is **NOT a fork** of dynamic-crf — it is a downstream Windows GUI
 1. **Depends on** the upstream binary: clones [terranvigil/dynamic-crf](https://github.com/terranvigil/dynamic-crf) at install time, applies patches, builds with Go.
 2. **Credits the upstream author**: all VMAF search / bisection / encoding orchestration logic is from terranvigil.
 
-The PowerShell GUI (`asa-gui.ps1`), encoder engine wrapper (`gui/Encoder.psm1`), build scripts and installer are original to this project. See [LICENSE](LICENSE) for our MIT-style attribution.
+The PowerShell GUI (`gm-encoder.ps1`), encoder engine wrapper (`gui/Encoder.psm1`), build scripts and installer are original to this project. See [LICENSE](LICENSE) for our MIT-style attribution.
 
 ## Patches applied to dynamic-crf
 
@@ -43,7 +43,7 @@ Without these patches, `dynamic-crf.exe` either fails to build on Windows, encod
 
 ### Single-exe usage (recommended)
 
-1. Download `asa-gui.exe` from [Releases](../../releases)
+1. Download `gm-encoder.exe` from [Releases](../../releases)
 2. Double-click → click **Install** button in the header
 3. Wait ~5 min while the installer downloads ~500 MB (Go toolchain, ffmpeg, MediaInfo, git portable) into `bin\` and builds patched `dynamic-crf.exe`
 4. Drop video files into `input\`, pick a codec, click **START**
@@ -52,8 +52,8 @@ Without these patches, `dynamic-crf.exe` either fails to build on Windows, encod
 
 ```powershell
 # Clone this repo
-git clone https://github.com/<your-user>/asa-encoder
-cd asa-encoder
+git clone https://github.com/<your-user>/gm-encoder
+cd gm-encoder
 
 # Build the .exe (requires PowerShell 5.1+, will install ps2exe module first time)
 .\build-exe.ps1
@@ -76,16 +76,16 @@ Default settings: VMAF target 93, tolerance 1.5, CRF range 18-28, output as MKV 
 
 ## Build artifacts
 
-- `asa-gui.exe` — main GUI, self-contained (PowerShell + WPF bundled via ps2exe)
+- `gm-encoder.exe` — main GUI, self-contained (PowerShell + WPF bundled via ps2exe)
 - `dynamic-crf.exe` — patched build of upstream Go binary
 - `bin\` — ffmpeg, ffprobe, MediaInfo, Go toolchain, git portable (~500 MB)
 
 ## Project layout
 
 ```
-asa-encoder/
-├── asa-gui.ps1                 # Main GUI source (inline XAML + event wiring)
-├── build-exe.ps1               # Bundles modules + ps2exe → asa-gui.exe
+gm-encoder/
+├── gm-encoder.ps1                 # Main GUI source (inline XAML + event wiring)
+├── build-exe.ps1               # Bundles modules + ps2exe → gm-encoder.exe
 ├── install-dynamic-crf.bat     # Installer + Go source patches
 ├── reinstall-dynamic-crf.bat   # Convenience: delete exe + reinstall
 ├── generate-handover.ps1       # Generates PROJECT-HANDOVER.md for AI context handover

@@ -33,7 +33,7 @@ function Compact-Source {
 }
 
 $header = @'
-# ASA Video Encoder — Project Handover
+# GM Encoder — Project Handover
 
 ## What this is
 
@@ -48,8 +48,8 @@ via a post-mux step.
 
 ```
 C:\ai code\asa\
-├── asa-gui.ps1                 # Main GUI (WPF inline XAML + event wiring)
-├── asa-gui.exe                 # Built artifact (ps2exe of bundled .ps1)
+├── gm-encoder.ps1                 # Main GUI (WPF inline XAML + event wiring)
+├── gm-encoder.exe                 # Built artifact (ps2exe of bundled .ps1)
 ├── build-exe.ps1               # Bundler: concatenates gui\*.ps* + install bat into one .ps1, ps2exe to .exe
 ├── install-dynamic-crf.bat     # Installer: downloads Go/ffmpeg/mediainfo, patches dynamic-crf source, builds dynamic-crf.exe
 ├── run.bat                     # Sets PATH + invokes dynamic-crf.exe (legacy, used by some flows)
@@ -84,7 +84,7 @@ The `install-dynamic-crf.bat` clones the Go source and applies these patches bef
 - **Background work**: runs in a PowerShell **Runspace** (not `Start-Job`). UI thread owns ObservableCollections (Pending, Completed) and timers.
 - **Thread-safety**: worker NEVER calls `Dispatcher.Invoke` (causes thread-affinity errors with cross-runspace scriptblocks). Instead writes to a `Hashtable.Synchronized` (SharedState) + a `ConcurrentQueue` (UiActionQueue + LogQueue). UI thread has a `DispatcherTimer` (80ms) that reads these and applies updates.
 - **Job Object** (`_job-kill-on-close.ps1`): main process is added to a Windows Job Object with `JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE`. When GUI closes (or crashes), Windows kills all child ffmpeg/dynamic-crf/mediainfo processes automatically.
-- **Settings persistence**: `%APPDATA%\AsaEncoder\settings.json` saves input/output dirs, codec selection, all toggles. Loaded at startup, saved on Start click + Closing.
+- **Settings persistence**: `%APPDATA%\GmEncoder\settings.json` saves input/output dirs, codec selection, all toggles. Loaded at startup, saved on Start click + Closing.
 - **Install/Reinstall buttons**: write `install-dynamic-crf.bat` to disk next to exe (embedded as base64 in bundled exe, else uses existing local file) and run it. Output streams to console.
 
 ## Encoding pipeline per file (in `Invoke-FileEncode`)
@@ -120,7 +120,7 @@ cd "C:\ai code\asa"
 
 # Build .exe (bundles gui\*.ps* + install-dynamic-crf.bat as base64)
 .\build-exe.ps1
-# -> asa-gui.exe (~160 KB)
+# -> gm-encoder.exe (~160 KB)
 
 # First-time setup: click Install in GUI, or run:
 .\install-dynamic-crf.bat
@@ -148,14 +148,14 @@ cd "C:\ai code\asa"
 $files = if ($Compact) {
     # Skip install-dynamic-crf.bat (23 KB), run.bat, reinstall, archive script
     @(
-        @{ Path = 'asa-gui.ps1';                Lang = 'powershell' }
+        @{ Path = 'gm-encoder.ps1';                Lang = 'powershell' }
         @{ Path = 'gui/Encoder.psm1';           Lang = 'powershell' }
         @{ Path = 'gui/_job-kill-on-close.ps1'; Lang = 'powershell' }
         @{ Path = 'build-exe.ps1';              Lang = 'powershell' }
     )
 } else {
     @(
-        @{ Path = 'asa-gui.ps1';                Lang = 'powershell' }
+        @{ Path = 'gm-encoder.ps1';                Lang = 'powershell' }
         @{ Path = 'gui/Encoder.psm1';           Lang = 'powershell' }
         @{ Path = 'gui/_job-kill-on-close.ps1'; Lang = 'powershell' }
         @{ Path = 'build-exe.ps1';              Lang = 'powershell' }

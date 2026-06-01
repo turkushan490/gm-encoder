@@ -1,30 +1,30 @@
 #requires -Version 5.1
 <#
   build-exe.ps1
-  Bundle gui\Encoder.psm1 + gui\_job-kill-on-close.ps1 inline in asa-gui.ps1
-  en compileer naar single self-contained asa-gui.exe via ps2exe.
+  Bundle gui\Encoder.psm1 + gui\_job-kill-on-close.ps1 inline in gm-encoder.ps1
+  en compileer naar single self-contained gm-encoder.exe via ps2exe.
 #>
 
 $ErrorActionPreference = 'Stop'
 $Root = Split-Path -Parent $MyInvocation.MyCommand.Path
 
 Write-Host ""
-Write-Host "=== ASA build-exe (bundled) ===" -ForegroundColor Cyan
+Write-Host "=== GM build-exe (bundled) ===" -ForegroundColor Cyan
 Write-Host ""
 
 # Kill running instances
-Get-Process -Name 'asa-gui' -ErrorAction SilentlyContinue | ForEach-Object {
-    Write-Host "Stoppen running asa-gui (PID $($_.Id))..." -ForegroundColor Yellow
+Get-Process -Name 'gm-encoder' -ErrorAction SilentlyContinue | ForEach-Object {
+    Write-Host "Stoppen running gm-encoder (PID $($_.Id))..." -ForegroundColor Yellow
     $_.Kill()
     $_.WaitForExit(2000) | Out-Null
 }
 
 # Paths
-$src        = Join-Path $Root 'asa-gui.ps1'
+$src        = Join-Path $Root 'gm-encoder.ps1'
 $encoderMod = Join-Path $Root 'gui\Encoder.psm1'
 $jobKill    = Join-Path $Root 'gui\_job-kill-on-close.ps1'
-$bundled    = Join-Path $Root 'asa-gui-bundled.ps1'
-$exe        = Join-Path $Root 'asa-gui.exe'
+$bundled    = Join-Path $Root 'gm-encoder-bundled.ps1'
+$exe        = Join-Path $Root 'gm-encoder.exe'
 
 foreach ($f in @($src, $encoderMod, $jobKill)) {
     if (-not (Test-Path $f)) {
@@ -35,7 +35,7 @@ foreach ($f in @($src, $encoderMod, $jobKill)) {
 
 if (Test-Path $exe) {
     try { Remove-Item $exe -Force -ErrorAction Stop } catch {
-        Write-Host "[!!] Kon oude asa-gui.exe niet verwijderen: $($_.Exception.Message)" -ForegroundColor Red
+        Write-Host "[!!] Kon oude gm-encoder.exe niet verwijderen: $($_.Exception.Message)" -ForegroundColor Red
         Write-Host "     Sluit eerst de GUI handmatig." -ForegroundColor Yellow
         exit 1
     }
@@ -102,7 +102,7 @@ $mainPatched = $mainPatched -replace $importPattern, '# Bundled mode: modules zi
 # 2. Bundled modules (jobKill + Encoder)
 # 3. Rest of main (XAML, event wiring, ShowDialog)
 
-# Splits asa-gui.ps1 op de "Bundled mode" marker (waar Import-Module zat)
+# Splits gm-encoder.ps1 op de "Bundled mode" marker (waar Import-Module zat)
 $splitMarker = '# Bundled mode: modules zijn inline geladen'
 $parts = $mainPatched -split [regex]::Escape($splitMarker), 2
 if ($parts.Count -ne 2) {
@@ -128,9 +128,9 @@ Write-Host "Compileren $bundled -> $exe ..." -ForegroundColor Cyan
 try {
     Invoke-PS2EXE -inputFile $bundled -outputFile $exe `
         -noConsole `
-        -title 'ASA Encoder' `
+        -title 'GM Encoder' `
         -company 'Turkushan' `
-        -product 'ASA Video Encoder' `
+        -product 'GM Encoder' `
         -version '1.0.0.0' `
         -requireAdmin:$false `
         -DPIAware
@@ -138,7 +138,7 @@ try {
     if (Test-Path $exe) {
         $size = [Math]::Round((Get-Item $exe).Length / 1KB, 1)
         Write-Host ""
-        Write-Host "[OK] asa-gui.exe gebouwd ($size KB, self-contained)" -ForegroundColor Green
+        Write-Host "[OK] gm-encoder.exe gebouwd ($size KB, self-contained)" -ForegroundColor Green
         Write-Host ""
         Write-Host " Run met: $exe" -ForegroundColor Cyan
         Write-Host " De gui\ map is NIET meer nodig naast de exe."

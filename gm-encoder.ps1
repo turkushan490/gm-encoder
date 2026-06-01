@@ -1,7 +1,7 @@
 #requires -Version 5.1
 <#
-  asa-gui.ps1
-  ASA Video Encoder GUI - WPF in PowerShell.
+  gm-encoder.ps1
+  GM Encoder GUI - WPF in PowerShell.
   Wraps Encoder.psm1 with a blue-themed interactive interface.
 #>
 
@@ -46,14 +46,14 @@ function Resolve-ScriptRoot {
     return (Get-Location).Path
 }
 $script:Root = Resolve-ScriptRoot
-$ErrorLogPath = Join-Path $script:Root 'asa-gui-error.log'
+$ErrorLogPath = Join-Path $script:Root 'gm-encoder-error.log'
 
 trap {
     $msg = Write-StartupError -Err $_ -Where 'trap'
     try {
         [System.Windows.MessageBox]::Show(
             "$msg`n`nFull log:`n$ErrorLogPath",
-            'ASA Encoder - Fatal',
+            'GM Encoder - Fatal',
             'OK',
             'Error'
         ) | Out-Null
@@ -70,7 +70,7 @@ $encoderModulePath = Join-Path $Root 'gui\Encoder.psm1'
 if (-not (Test-Path -LiteralPath $encoderModulePath)) {
     [System.Windows.MessageBox]::Show(
         "Encoder.psm1 not found at:`n$encoderModulePath",
-        'ASA Encoder - Module missing',
+        'GM Encoder - Module missing',
         'OK', 'Error'
     ) | Out-Null
     exit 1
@@ -83,7 +83,7 @@ Import-Module $encoderModulePath -Force
 $xaml = @'
 <Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="ASA Encoder"
+        Title="GM Encoder"
         Width="1340" Height="860"
         WindowStartupLocation="CenterScreen"
         Background="Transparent">
@@ -214,7 +214,7 @@ $xaml = @'
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
                         <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                            <TextBlock Text="ASA Video Encoder" FontSize="24" FontWeight="Bold" Margin="0,0,16,0" VerticalAlignment="Center"/>
+                            <TextBlock Text="GM Encoder" FontSize="24" FontWeight="Bold" Margin="0,0,16,0" VerticalAlignment="Center"/>
                             <Button x:Name="BtnInstall"   Content="Install"   MinWidth="80" Margin="0,0,6,0" VerticalAlignment="Center"/>
                             <Button x:Name="BtnReinstall" Content="Reinstall" MinWidth="80" Margin="0,0,0,0" VerticalAlignment="Center" Style="{StaticResource WarnButton}"/>
                         </StackPanel>
@@ -586,9 +586,9 @@ $script:Completed = New-Object System.Collections.ObjectModel.ObservableCollecti
 $ctrl.LstPending.ItemsSource   = $script:Pending
 
 # =============================================================
-# Settings persistence (JSON in %APPDATA%\AsaEncoder\)
+# Settings persistence (JSON in %APPDATA%\GmEncoder\)
 # =============================================================
-$script:SettingsDir  = Join-Path $env:APPDATA 'AsaEncoder'
+$script:SettingsDir  = Join-Path $env:APPDATA 'GmEncoder'
 $script:SettingsFile = Join-Path $script:SettingsDir 'settings.json'
 if (-not (Test-Path -LiteralPath $script:SettingsDir)) {
     try { New-Item -ItemType Directory -Path $script:SettingsDir -Force | Out-Null } catch {}
@@ -1270,7 +1270,7 @@ $ctrl.BtnStart.add_Click({ Save-Settings; Start-EncodeAll })
 function Get-InstallBatPath {
     $localBat = Join-Path $Root 'install-dynamic-crf.bat'
     if (Test-Path -LiteralPath $localBat) { return $localBat }
-    # Bundled: schrijf naast asa-gui.exe (zodat %~dp0 binnen de bat naar $Root resolved
+    # Bundled: schrijf naast gm-encoder.exe (zodat %~dp0 binnen de bat naar $Root resolved
     # en bin\ffmpeg etc. in $Root\bin\ terecht komen, niet in %TEMP%\bin)
     if ($script:InstallBatBase64) {
         $extracted = Join-Path $Root 'install-dynamic-crf.bat'
@@ -1406,6 +1406,6 @@ $window.add_Closing({
     if ($hwTimer)     { $hwTimer.Stop() }
 })
 
-Add-ConsoleLine "[INFO] ASA Encoder ready. Pick input/output folders, select codec, click START."
+Add-ConsoleLine "[INFO] GM Encoder ready. Pick input/output folders, select codec, click START."
 
 $window.ShowDialog() | Out-Null
