@@ -4,7 +4,17 @@ A Windows GUI for [terranvigil/dynamic-crf](https://github.com/terranvigil/dynam
 
 Built with PowerShell + WPF, compiled to a single self-contained `.exe` (~160 KB) via [`ps2exe`](https://github.com/MScholtes/PS2EXE).
 
-![GUI](docs/screenshot.png)
+## Screenshots
+
+### Idle — ready to encode
+Pick input/output folders, choose a codec (12 options auto-detected), set VMAF target and tolerance, drop videos in `input\`, click START.
+
+![GM Encoder idle state](docs/screenshot-idle.png)
+
+### Running — live progress + CPU/GPU usage
+While encoding: live CPU/GPU usage bars in the header, phase-weighted overall progress, per-step indicator, and streaming console output from dynamic-crf + ffmpeg. Pause halts after the current file completes; Stop kills everything immediately via Job Object.
+
+![GM Encoder running](docs/screenshot-running.png)
 
 ## Features
 
