@@ -9,12 +9,12 @@ Built with PowerShell + WPF, compiled to a single self-contained `.exe` (~160 KB
 ### Idle — ready to encode
 Pick input/output folders, choose a codec (12 options auto-detected), set VMAF target and tolerance, drop videos in `input\`, click START.
 
-![GM Encoder idle state](docs/screenshot-idle.png)
+![GM Encoder idle state](docs/screenshot-idle.webp)
 
 ### Running — live progress + CPU/GPU usage
 While encoding: live CPU/GPU usage bars in the header, phase-weighted overall progress, per-step indicator, and streaming console output from dynamic-crf + ffmpeg. Pause halts after the current file completes; Stop kills everything immediately via Job Object.
 
-![GM Encoder running](docs/screenshot-running.png)
+![GM Encoder running](docs/screenshot-running.webp)
 
 ## Features
 
