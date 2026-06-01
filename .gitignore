@@ -1,0 +1,36 @@
+# Build artifacts
+asa-gui.exe
+asa-gui-bundled.ps1
+asa-gui-error.log
+debug-bundled.ps1
+install.log
+
+# Patched binary (built by installer)
+dynamic-crf.exe
+
+# Downloaded toolchain (~500 MB - installed by install-dynamic-crf.bat)
+bin/
+gopath/
+
+# Working directories
+input/
+output/
+temp/
+
+# Generated handover docs (regen via generate-handover.ps1)
+PROJECT-HANDOVER.md
+PROJECT-HANDOVER-COMPACT.md
+
+# Archive of old CLI versions
+archive/
+
+# OS / IDE
+Thumbs.db
+.DS_Store
+.vs/
+.vscode/
+*.swp
+*~
+
+# User-specific settings (live in %APPDATA%, not in repo)
+settings.json
