@@ -21,8 +21,12 @@ temp/
 PROJECT-HANDOVER.md
 PROJECT-HANDOVER-COMPACT.md
 
-# Archive of old CLI versions
-archive/
+# Archive: keep scripts (history reference), skip video outputs + rar bundle
+archive/*/output/
+archive/**/*.rar
+archive/**/*.mkv
+archive/**/*.mp4
+archive/**/*.mov
 
 # Local snapshots / test copies
 glm/
