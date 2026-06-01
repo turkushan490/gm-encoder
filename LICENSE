@@ -2,7 +2,7 @@ MIT License
 
 Copyright (c) 2026 Turkushan
 
-This project (ASA Video Encoder GUI) wraps and patches dynamic-crf by
+This project (GM Encoder GUI) wraps and patches dynamic-crf by
 Terran Vigil (https://github.com/terranvigil/dynamic-crf), which is also
 MIT-licensed. The patches applied at install time to the dynamic-crf
 Go source are part of this project; the patched upstream source itself
