@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="docs/logo.svg" width="180" alt="GM Encoder logo"/>
+</p>
+
 # GM Encoder
 
 A Windows GUI for [terranvigil/dynamic-crf](https://github.com/terranvigil/dynamic-crf) that wraps the VMAF-targeted encoding workflow with a polished interface. Patches the upstream Go source at install time to fix Windows path issues and add support for AMD/Intel hardware encoders.
@@ -53,7 +57,7 @@ Without these patches, `dynamic-crf.exe` either fails to build on Windows, encod
 
 ### Single-exe usage (recommended)
 
-1. Download `gm-encoder.exe` from [Releases](../../releases)
+1. Download `gm-gui.exe` from [Releases](../../releases)
 2. Double-click → click **Install** button in the header
 3. Wait ~5 min while the installer downloads ~500 MB (Go toolchain, ffmpeg, MediaInfo, git portable) into `bin\` and builds patched `dynamic-crf.exe`
 4. Drop video files into `input\`, pick a codec, click **START**
@@ -86,7 +90,7 @@ Default settings: VMAF target 93, tolerance 1.5, CRF range 18-28, output as MKV 
 
 ## Build artifacts
 
-- `gm-encoder.exe` — main GUI, self-contained (PowerShell + WPF bundled via ps2exe)
+- `gm-gui.exe` — main GUI, self-contained (PowerShell + WPF bundled via ps2exe)
 - `dynamic-crf.exe` — patched build of upstream Go binary
 - `bin\` — ffmpeg, ffprobe, MediaInfo, Go toolchain, git portable (~500 MB)
 
@@ -95,7 +99,7 @@ Default settings: VMAF target 93, tolerance 1.5, CRF range 18-28, output as MKV 
 ```
 gm-encoder/
 ├── gm-encoder.ps1                 # Main GUI source (inline XAML + event wiring)
-├── build-exe.ps1               # Bundles modules + ps2exe → gm-encoder.exe
+├── build-exe.ps1               # Bundles modules + ps2exe → gm-gui.exe
 ├── install-dynamic-crf.bat     # Installer + Go source patches
 ├── reinstall-dynamic-crf.bat   # Convenience: delete exe + reinstall
 ├── generate-handover.ps1       # Generates PROJECT-HANDOVER.md for AI context handover

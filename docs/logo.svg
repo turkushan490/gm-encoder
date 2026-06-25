@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 320" width="320" height="320">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1E3A8A"/>
+      <stop offset="100%" stop-color="#0E2B5A"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#22C55E"/>
+      <stop offset="100%" stop-color="#16A34A"/>
+    </linearGradient>
+  </defs>
+
+  <!-- background rounded square -->
+  <rect width="320" height="320" rx="56" fill="url(#bgGrad)"/>
+
+  <!-- waveform / progress bar at bottom -->
+  <g transform="translate(0 240)">
+    <rect x="40" y="0" width="240" height="20" rx="10" fill="#0A1428" stroke="#60A5FA" stroke-width="1"/>
+    <rect x="40" y="0" width="160" height="20" rx="10" fill="url(#accent)"/>
+    <path d="M40 10 Q60 4 80 10 T120 10 T160 10 T200 10" fill="none" stroke="#86EFAC" stroke-width="2" opacity="0.7"/>
+  </g>
+
+  <!-- "GM" text -->
+  <text x="160" y="180" text-anchor="middle" font-family="Segoe UI, Helvetica, Arial, sans-serif"
+        font-weight="800" font-size="140" fill="#EEF4FF" letter-spacing="-4">GM</text>
+
+  <!-- small play triangle -->
+  <polygon points="80,80 80,140 130,110" fill="#60A5FA" opacity="0.8"/>
+</svg>
