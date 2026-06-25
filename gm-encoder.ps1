@@ -539,6 +539,21 @@ $xaml = @'
 $reader = New-Object System.Xml.XmlNodeReader $xamlDoc
 $window = [Windows.Markup.XamlReader]::Load($reader)
 
+# Set window icon - tries multiple locations so it works in dev + bundled exe
+foreach ($icoPath in @(
+    (Join-Path $Root 'docs\icon.ico'),
+    (Join-Path $Root 'icon.ico'),
+    (Join-Path ([System.IO.Path]::GetDirectoryName([System.Diagnostics.Process]::GetCurrentProcess().MainModule.FileName)) 'docs\icon.ico')
+)) {
+    if ($icoPath -and (Test-Path -LiteralPath $icoPath)) {
+        try {
+            $uri = New-Object System.Uri ($icoPath, [System.UriKind]::Absolute)
+            $window.Icon = New-Object System.Windows.Media.Imaging.BitmapImage $uri
+            break
+        } catch {}
+    }
+}
+
 function Get-Ctrl([string]$name) { return $window.FindName($name) }
 
 $ctrl = @{}

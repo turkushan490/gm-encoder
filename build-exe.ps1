@@ -126,14 +126,21 @@ Import-Module ps2exe -ErrorAction Stop
 # ----- Compile -----
 Write-Host "Compileren $bundled -> $exe ..." -ForegroundColor Cyan
 try {
+    $icon = Join-Path $Root 'docs\icon.ico'
+    $iconArgs = @{}
+    if (Test-Path -LiteralPath $icon) {
+        $iconArgs = @{ iconFile = $icon }
+        Write-Host "Embedding icon: $icon" -ForegroundColor DarkGray
+    }
     Invoke-PS2EXE -inputFile $bundled -outputFile $exe `
         -noConsole `
         -title 'GM Encoder' `
         -company 'Turkushan' `
         -product 'GM Encoder' `
-        -version '1.0.0.0' `
+        -version '1.0.1.0' `
         -requireAdmin:$false `
-        -DPIAware
+        -DPIAware `
+        @iconArgs
 
     if (Test-Path $exe) {
         $size = [Math]::Round((Get-Item $exe).Length / 1KB, 1)
