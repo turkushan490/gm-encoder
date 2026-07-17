@@ -8,6 +8,8 @@ services:
       dockerfile: Dockerfile
     image: gm-encoder:local
     container_name: gm-encoder
+    ports:
+      - "8080:8080"          # web control panel -> http://localhost:8080
     # For Intel QSV / AMD VAAPI: expose the render node.
     devices:
       - /dev/dri:/dev/dri

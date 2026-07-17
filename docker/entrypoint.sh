@@ -43,5 +43,14 @@ chown -R "$PUID:$PGID" "$CONFIG_DIR" 2>/dev/null || true
 
 echo "[entrypoint] running as ${USR_NAME}(${PUID}):${GRP_NAME}(${PGID}), umask ${UMASK}"
 
-# ---- drop privileges and start ----
+# ---- web GUI (background, auto-restart) ----
+(
+  while true; do
+    gosu "$PUID:$PGID" python3 /app/server.py
+    echo "[entrypoint] web server exited, restarting in 3s..."
+    sleep 3
+  done
+) &
+
+# ---- watch/encode loop (foreground; container lives as long as this does) ----
 exec gosu "$PUID:$PGID" /app/watch.sh

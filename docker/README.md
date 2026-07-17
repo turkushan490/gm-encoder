@@ -1,8 +1,14 @@
 # GM Encoder — Docker / Unraid edition
 
-A headless, watch-folder version of GM Encoder for servers. Drop a video into the
-input share → it finds the optimal CRF for your VMAF target → encodes → remuxes
-all original audio/subtitle/attachment/chapter streams → writes to the output share.
+A watch-folder **and** web-GUI version of GM Encoder for servers. Drop a video into
+the input share (or pick it in the browser) → it finds the optimal CRF for your VMAF
+target → encodes → remuxes all original audio/subtitle/attachment/chapter streams →
+writes to the output share.
+
+**Web control panel** at `http://<server-ip>:8080` — live progress bar, CPU/GPU
+meters, current queue, recent completed, a full settings editor (applies live, no
+restart) and manual "encode this file now" + Pause/Stop. The watch-folder keeps
+running alongside it.
 
 > **Why a separate build?** The Windows app is a WPF GUI and cannot run in a Linux
 > container. This edition reuses the *engine* — [`dynamic-crf`](https://github.com/terranvigil/dynamic-crf)
@@ -16,13 +22,30 @@ all original audio/subtitle/attachment/chapter streams → writes to the output 
 
 | File | Purpose |
 |---|---|
-| `Dockerfile` | Multi-stage: builds `dynamic-crf` (Go), runtime = Debian + BtbN static ffmpeg (nvenc/qsv/vaapi/libvmaf/x265/svt-av1) |
-| `patch-dcrf.sh` | Linux source patches for `dynamic-crf` |
-| `watch.sh` | Polling watch-folder loop (SMB/NFS-safe — no inotify) |
-| `encode.sh` | Single-file encode + post-mux + size guard |
-| `entrypoint.sh` | PUID/PGID, umask, `/dev/dri` group access, drops privileges |
+| `Dockerfile` | Multi-stage: builds `dynamic-crf` (Go), runtime = Debian + BtbN static ffmpeg (nvenc/qsv/vaapi/libvmaf/x265/svt-av1) + python3/jq |
+| `patch-dcrf.sh` | Linux source patches for `dynamic-crf` (codec flags, duration, progress forwarding) |
+| `watch.sh` | Poll loop (SMB/NFS-safe) — runs auto + manual jobs, one at a time |
+| `encode.sh` | Single-file encode + live progress + post-mux + size guard |
+| `lib.sh` | Shared JSON state contract (settings/status/queue/runtime) |
+| `server.py` | Web control panel (stdlib http server, no pip deps) |
+| `webui/index.html` | Dashboard UI (settings, live progress, queue, manual encode, pause/stop) |
+| `entrypoint.sh` | PUID/PGID, `/dev/dri` access, launches web server + watch loop |
 | `../templates/gm-encoder.xml` | Unraid template (import to get all fields pre-filled) |
 | `docker-compose.yml` | Local / non-Unraid testing |
+
+## Web control panel
+
+Open `http://<server-ip>:8080`:
+
+- **Now encoding** — current file, phase (scene detect → sample → search → encode →
+  mux), a smooth progress bar, plus **CPU** and **GPU** meters.
+- **Input files** — browse `/input`, click **Encode** to run one manually now.
+- **Manual queue** — pending manual jobs (+ Clear).
+- **Settings** — every option as a form; **Save** applies to the next job with no
+  container restart (stored in `/config/settings.json`, overrides the template env).
+- **Pause** (finish current, hold new) / **Resume** / **Stop current** (kills the encode).
+- **Recent completed** — codec, CRF, VMAF, size ratio, time.
+- Toggle **Auto watch-folder** off if you want GUI-only (manual) operation.
 
 ---
 

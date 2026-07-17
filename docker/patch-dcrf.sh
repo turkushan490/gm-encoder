@@ -52,6 +52,27 @@ GO
     else
         echo "[patch] WARN ffmpeg_encode.go: -crf needle not found (upstream changed?) - skipping"
     fi
+
+    # --- progress forwarding (best-effort; enables a smooth encode bar) ---
+    # a) emit machine-readable progress right after -hide_banner
+    if grep -q '"-hide_banner"' "$ENC" && ! grep -q '"pipe:1"' "$ENC"; then
+        perl -0777 -i -pe 's/"-hide_banner",/"-hide_banner",\n\t\t"-progress", "pipe:1",\n\t\t"-stats_period", "1",/' "$ENC"
+        echo "[patch] ffmpeg_encode.go: -progress pipe:1 added"
+    fi
+    # b) forward ffmpeg stdout (progress) + stderr so encode.sh can read it
+    if grep -qF 'cmd.Stderr = &stderr' "$ENC" && ! grep -q 'cmd.Stdout = os.Stdout' "$ENC"; then
+        perl -0777 -i -pe 's/cmd\.Stderr = &stderr/cmd.Stderr = io.MultiWriter(&stderr, os.Stderr)\n\tcmd.Stdout = os.Stdout/' "$ENC"
+        echo "[patch] ffmpeg_encode.go: stdout/stderr forwarding added"
+    fi
+    # c) ensure io + os are imported (each only if missing)
+    if ! grep -qE '^[[:space:]]*"io"[[:space:]]*$' "$ENC"; then
+        perl -0777 -i -pe 's/(\n[ \t]*)"os\/exec"/\1"io"\1"os\/exec"/' "$ENC"
+        echo "[patch] ffmpeg_encode.go: io import added"
+    fi
+    if ! grep -qE '^[[:space:]]*"os"[[:space:]]*$' "$ENC"; then
+        perl -0777 -i -pe 's/(\n[ \t]*)"os\/exec"/\1"os"\1"os\/exec"/' "$ENC"
+        echo "[patch] ffmpeg_encode.go: os import added"
+    fi
 else
     echo "[patch] WARN $ENC not found"
 fi

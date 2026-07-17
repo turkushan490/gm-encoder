@@ -50,7 +50,7 @@ RUN set -eux; \
     apt-get update; \
     apt-get install -y --no-install-recommends \
         ca-certificates curl xz-utils tzdata gosu \
-        mediainfo \
+        python3 jq procps mediainfo \
         libva2 vainfo va-driver-all mesa-va-drivers intel-media-va-driver-non-free; \
     rm -rf /var/lib/apt/lists/*
 
@@ -66,8 +66,12 @@ RUN set -eux; \
     ffmpeg -hide_banner -filters 2>/dev/null | grep -q libvmaf && echo "libvmaf OK"
 
 COPY --from=builder /out/dynamic-crf /usr/local/bin/dynamic-crf
-COPY entrypoint.sh watch.sh encode.sh /app/
-RUN sed -i 's/\r$//' /app/*.sh && chmod +x /app/*.sh /usr/local/bin/dynamic-crf
+COPY entrypoint.sh watch.sh encode.sh lib.sh server.py /app/
+COPY webui /app/webui
+RUN sed -i 's/\r$//' /app/*.sh /app/*.py \
+    && chmod +x /app/*.sh /app/server.py /usr/local/bin/dynamic-crf \
+    && python3 -m py_compile /app/server.py \
+    && bash -n /app/watch.sh && bash -n /app/encode.sh && bash -n /app/lib.sh
 
 # ---- Default configuration (all overridable via -e on Unraid) ----
 ENV \
@@ -96,12 +100,15 @@ ENV \
     # --- hardware ---
     VAAPI_DEVICE=/dev/dri/renderD128 \
     # --- watch behaviour ---
+    WATCH_ENABLED=true \
     WATCH_INTERVAL=15 \
     SCAN_EXISTING=true \
     FILE_STABLE_SECONDS=20 \
     SOURCE_ACTION=move \
     KEEP_LARGER=true \
     MIN_SHRINK_PERCENT=0 \
+    # --- web GUI ---
+    GUI_PORT=8080 \
     # --- nvidia (only used when started with --runtime=nvidia) ---
     NVIDIA_VISIBLE_DEVICES=all \
     NVIDIA_DRIVER_CAPABILITIES=all \
@@ -111,6 +118,7 @@ ENV \
     UMASK=022 \
     TZ=Etc/UTC
 
+EXPOSE 8080
 VOLUME ["/input", "/output", "/config"]
 
 ENTRYPOINT ["/app/entrypoint.sh"]

@@ -3,7 +3,7 @@
   <Name>GM-Encoder</Name>
   <Repository>ghcr.io/turkushan490/gm-encoder:latest</Repository>
   <Registry>https://github.com/turkushan490/gm-encoder/pkgs/container/gm-encoder</Registry>
-  <Network>none</Network>
+  <Network>bridge</Network>
   <MyIP/>
   <Shell>bash</Shell>
   <Privileged>false</Privileged>
@@ -25,12 +25,15 @@
       - CPU only : leave Extra Parameters empty
   </Overview>
   <Category>MediaApp:Video Tools:</Category>
-  <WebUI/>
+  <WebUI>http://[IP]:[PORT:8080]/</WebUI>
   <Icon>https://raw.githubusercontent.com/turkushan490/gm-encoder/main/docs/logo.svg</Icon>
   <ExtraParams>--runtime=nvidia --device /dev/dri:/dev/dri/</ExtraParams>
   <PostArgs/>
   <DonateText/>
   <DonateLink/>
+
+  <!-- ================= WEB GUI ================= -->
+  <Config Name="Web GUI port" Target="8080" Default="8080" Mode="tcp" Description="Open http://UNRAID-IP:PORT for the control panel (settings, live progress, manual encode, pause/stop)." Type="Port" Display="always" Required="true" Mask="false"/>
 
   <!-- ================= PATHS ================= -->
   <Config Name="Input share" Target="/input" Default="/mnt/user/media/GM-Encoder/encode_in" Mode="rw" Description="Drop videos here to encode (scanned recursively)." Type="Path" Display="always" Required="true" Mask="false"/>
@@ -54,6 +57,7 @@
   <Config Name="Output subdirectory" Target="OUTPUT_SUBDIR" Default="SAME_AS_SRC" Description="SAME_AS_SRC = mirror the input folder structure. Empty = flat into /output. Or a fixed folder name." Type="Variable" Display="advanced" Required="false" Mask="false"/>
 
   <!-- ================= WATCH BEHAVIOUR (dropdowns) ================= -->
+  <Config Name="Auto watch-folder" Target="WATCH_ENABLED" Default="true|false" Description="true = auto-encode files dropped in the input share. false = GUI/manual only (you pick files in the web UI)." Type="Variable" Display="always" Required="false" Mask="false"/>
   <Config Name="After success" Target="SOURCE_ACTION" Default="move|keep|delete" Description="What to do with the source after a successful encode. move = to input/done." Type="Variable" Display="always" Required="false" Mask="false"/>
   <Config Name="Keep larger output" Target="KEEP_LARGER" Default="true|false" Description="false = discard the result if it is not smaller than the source." Type="Variable" Display="advanced" Required="false" Mask="false"/>
   <Config Name="Poll interval (s)" Target="WATCH_INTERVAL" Default="15" Description="How often to scan the input share." Type="Variable" Display="advanced" Required="false" Mask="false"/>
