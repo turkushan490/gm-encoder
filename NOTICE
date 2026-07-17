@@ -1,0 +1,14 @@
+GM Encoder
+Copyright (c) 2026 Turkushan
+
+This project is licensed under the MIT License (see LICENSE).
+
+Third-party attribution
+-----------------------
+GM Encoder wraps and builds upon dynamic-crf by Terran Vigil
+(https://github.com/terranvigil/dynamic-crf), which is also MIT-licensed.
+
+The patches this project applies at install/build time to the dynamic-crf Go
+source are part of GM Encoder; the patched upstream source itself remains under
+Terran Vigil's MIT license. See:
+https://github.com/terranvigil/dynamic-crf/blob/main/LICENSE
