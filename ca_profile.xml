@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<CommunityApplications>
+  <!-- Required: describes this repository in the CA store -->
+  <Profile>
+**GM Encoder** — VMAF-targeted video encoding for Unraid.
+
+This repository provides **GM-Encoder**, a headless watch-folder transcoder. Drop
+videos into an input share and it finds the optimal CRF for your target quality
+using [terranvigil/dynamic-crf](https://github.com/terranvigil/dynamic-crf) +
+ffmpeg/libvmaf, encodes, and remuxes every original audio, subtitle, attachment
+and chapter stream.
+
+Supports **NVIDIA NVENC, Intel QSV, AMD/Intel VAAPI and CPU** (libx265 / SVT-AV1),
+with an `auto` codec mode that detects the passed-through GPU.
+
+Maintained by [turkushan490](https://github.com/turkushan490).
+Support: [GitHub Issues](https://github.com/turkushan490/gm-encoder/issues).
+  </Profile>
+
+  <Icon>https://raw.githubusercontent.com/turkushan490/gm-encoder/main/docs/logo.svg</Icon>
+  <WebPage>https://github.com/turkushan490/gm-encoder</WebPage>
+</CommunityApplications>

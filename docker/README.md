@@ -21,7 +21,7 @@ all original audio/subtitle/attachment/chapter streams → writes to the output 
 | `watch.sh` | Polling watch-folder loop (SMB/NFS-safe — no inotify) |
 | `encode.sh` | Single-file encode + post-mux + size guard |
 | `entrypoint.sh` | PUID/PGID, umask, `/dev/dri` group access, drops privileges |
-| `unraid-template.xml` | Import into Unraid to get all fields pre-filled |
+| `../templates/gm-encoder.xml` | Unraid template (import to get all fields pre-filled) |
 | `docker-compose.yml` | Local / non-Unraid testing |
 
 ---
@@ -54,12 +54,12 @@ Unraid can't read a **private** GitHub repo, so make `gm-encoder` **public** fir
 2. Scroll to **Template repositories** at the bottom.
 3. Paste `https://github.com/turkushan490/gm-encoder` on a new line → **Save**.
 4. Now the **Template** dropdown at the top has **GM-Encoder** under your repo. Pick it,
-   set your shares, **Apply**. (Unraid reads `docker/unraid-template.xml` automatically.)
+   set your shares, **Apply**. (Unraid reads `templates/gm-encoder.xml` automatically.)
 
 **A2 — Drop the file on the flash drive (no repo needed):**
 1. From a PC: open `\\TOWER\flash\config\plugins\dockerMan\templates-user\`
    (or on the server: `/boot/config/plugins/dockerMan/templates-user/`).
-2. Copy `unraid-template.xml` there, rename it `my-GM-Encoder.xml`.
+2. Copy `templates/gm-encoder.xml` there, rename it `my-GM-Encoder.xml`.
 3. **Docker → Add Container → Template → User templates → GM-Encoder**.
 
 **A3 — List it in the public Apps search (optional):** to make it findable by everyone

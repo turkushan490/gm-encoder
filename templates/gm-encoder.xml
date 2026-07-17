@@ -9,7 +9,7 @@
   <Privileged>false</Privileged>
   <Support>https://github.com/turkushan490/gm-encoder/issues</Support>
   <Project>https://github.com/turkushan490/gm-encoder</Project>
-  <TemplateURL>https://raw.githubusercontent.com/turkushan490/gm-encoder/main/docker/unraid-template.xml</TemplateURL>
+  <TemplateURL>https://raw.githubusercontent.com/turkushan490/gm-encoder/main/templates/gm-encoder.xml</TemplateURL>
   <Overview>
     VMAF-targeted video encoder as a watch-folder daemon. Drop videos in the input
     share and it finds the optimal CRF for your target quality (terranvigil/dynamic-crf
@@ -26,7 +26,7 @@
   </Overview>
   <Category>MediaApp:Video Tools:</Category>
   <WebUI/>
-  <Icon>https://raw.githubusercontent.com/turkushan490/gm-encoder/main/docs/icon.ico</Icon>
+  <Icon>https://raw.githubusercontent.com/turkushan490/gm-encoder/main/docs/logo.svg</Icon>
   <ExtraParams>--runtime=nvidia --device /dev/dri:/dev/dri/</ExtraParams>
   <PostArgs/>
   <DonateText/>
@@ -62,7 +62,7 @@
   <Config Name="Input extensions" Target="INPUT_EXTENSIONS" Default="mp4,mkv,mov,avi,m4v,webm,ts,wmv,flv" Description="Comma-separated list of file types to watch." Type="Variable" Display="advanced" Required="false" Mask="false"/>
   <Config Name="VAAPI render device" Target="VAAPI_DEVICE" Default="/dev/dri/renderD128" Description="Only for *_vaapi codecs." Type="Variable" Display="advanced" Required="false" Mask="false"/>
 
-  <!-- ================= NVIDIA (only used with --runtime=nvidia) ================= -->
+  <!-- ================= NVIDIA (used with runtime=nvidia) ================= -->
   <Config Name="NVIDIA_VISIBLE_DEVICES" Target="NVIDIA_VISIBLE_DEVICES" Default="all" Description="Your GPU UUID from the Nvidia-Driver plugin page (e.g. GPU-xxxxxxxx-...), or 'all'." Type="Variable" Display="advanced" Required="false" Mask="false"/>
   <Config Name="NVIDIA_DRIVER_CAPABILITIES" Target="NVIDIA_DRIVER_CAPABILITIES" Default="all" Description="Leave as 'all' for NVENC." Type="Variable" Display="advanced" Required="false" Mask="false"/>
 
