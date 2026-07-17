@@ -1,0 +1,33 @@
+# Local test / non-Unraid usage.
+#   docker compose up -d --build
+# Then drop a video into ./input and watch ./output.
+services:
+  gm-encoder:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: gm-encoder:local
+    container_name: gm-encoder
+    # For Intel QSV / AMD VAAPI: expose the render node.
+    devices:
+      - /dev/dri:/dev/dri
+    # For NVIDIA NVENC instead, comment out 'devices' above and uncomment:
+    # runtime: nvidia
+    # environment:
+    #   NVIDIA_VISIBLE_DEVICES: all
+    #   NVIDIA_DRIVER_CAPABILITIES: all
+    environment:
+      TZ: Europe/Amsterdam
+      PUID: "1000"
+      PGID: "1000"
+      CODEC: auto           # auto-detects GPU; or hevc_qsv / hevc_nvenc / hevc_vaapi / libx265
+      FAMILY: hevc          # what 'auto' targets: hevc | av1 | h264
+      OPTIMIZE: "true"
+      VMAF_TARGET: "93"
+      SOURCE_ACTION: move
+      SCAN_EXISTING: "true"
+    volumes:
+      - ./input:/input
+      - ./output:/output
+      - ./config:/config
+    restart: unless-stopped

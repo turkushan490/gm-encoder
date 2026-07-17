@@ -1,0 +1,6 @@
+# Shell scripts must stay LF or they break inside the Linux container.
+*.sh text eol=lf
+docker/entrypoint.sh text eol=lf
+docker/watch.sh       text eol=lf
+docker/encode.sh      text eol=lf
+docker/patch-dcrf.sh  text eol=lf

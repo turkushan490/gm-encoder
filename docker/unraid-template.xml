@@ -1,0 +1,74 @@
+<?xml version="1.0"?>
+<Container version="2">
+  <Name>GM-Encoder</Name>
+  <Repository>ghcr.io/turkushan490/gm-encoder:latest</Repository>
+  <Registry>https://github.com/turkushan490/gm-encoder/pkgs/container/gm-encoder</Registry>
+  <Network>none</Network>
+  <MyIP/>
+  <Shell>bash</Shell>
+  <Privileged>false</Privileged>
+  <Support>https://github.com/turkushan490/gm-encoder/issues</Support>
+  <Project>https://github.com/turkushan490/gm-encoder</Project>
+  <TemplateURL>https://raw.githubusercontent.com/turkushan490/gm-encoder/main/docker/unraid-template.xml</TemplateURL>
+  <Overview>
+    VMAF-targeted video encoder as a watch-folder daemon. Drop videos in the input
+    share and it finds the optimal CRF for your target quality (terranvigil/dynamic-crf
+    + ffmpeg/libvmaf), encodes, and remuxes all audio/subtitle/attachment/chapter
+    streams from the original.
+
+    Pick the encoder from the Codec dropdown, or leave it on 'auto' to detect the
+    passed-through GPU. Supports NVIDIA NVENC, Intel QSV, AMD/Intel VAAPI and CPU.
+
+    GPU ACCESS is controlled by Extra Parameters (below):
+      - NVIDIA : --runtime=nvidia --device /dev/dri:/dev/dri/   (needs Nvidia-Driver plugin)
+      - Intel/AMD (QSV/VAAPI) : --device /dev/dri:/dev/dri/
+      - CPU only : leave Extra Parameters empty
+  </Overview>
+  <Category>MediaApp:Video Tools:</Category>
+  <WebUI/>
+  <Icon>https://raw.githubusercontent.com/turkushan490/gm-encoder/main/docs/icon.ico</Icon>
+  <ExtraParams>--runtime=nvidia --device /dev/dri:/dev/dri/</ExtraParams>
+  <PostArgs/>
+  <DonateText/>
+  <DonateLink/>
+
+  <!-- ================= PATHS ================= -->
+  <Config Name="Input share" Target="/input" Default="/mnt/user/media/encode_in" Mode="rw" Description="Drop videos here to encode (scanned recursively)." Type="Path" Display="always" Required="true" Mask="false"/>
+  <Config Name="Output share" Target="/output" Default="/mnt/user/media/encode_out" Mode="rw" Description="Encoded files land here." Type="Path" Display="always" Required="true" Mask="false"/>
+  <Config Name="Config/appdata" Target="/config" Default="/mnt/user/appdata/gm-encoder" Mode="rw" Description="Logs + state (processed/failed lists)." Type="Path" Display="always" Required="true" Mask="false"/>
+
+  <!-- ================= ENCODER (dropdowns) ================= -->
+  <Config Name="Codec" Target="CODEC" Default="auto|hevc_nvenc|av1_nvenc|h264_nvenc|hevc_qsv|av1_qsv|h264_qsv|hevc_vaapi|av1_vaapi|h264_vaapi|libx265|libsvtav1|libx264" Description="auto = detect the passed-through GPU and use the Family below. Or pick an explicit encoder. Make sure Extra Parameters passes the matching device/runtime." Type="Variable" Display="always" Required="true" Mask="false"/>
+  <Config Name="Codec family (for auto)" Target="FAMILY" Default="hevc|av1|h264" Description="Which codec family 'auto' should target. hevc = best support, av1 = smallest (needs newer GPU), h264 = most compatible." Type="Variable" Display="always" Required="false" Mask="false"/>
+  <Config Name="Optimize (VMAF search)" Target="OPTIMIZE" Default="true|false" Description="true = find the best CRF for the VMAF target. false = fixed quality (Manual CRF)." Type="Variable" Display="always" Required="false" Mask="false"/>
+  <Config Name="VMAF target" Target="VMAF_TARGET" Default="93" Description="Quality target 0-100. 95 = archival, 93 = high (recommended), 90 = smaller." Type="Variable" Display="always" Required="false" Mask="false"/>
+  <Config Name="VMAF tolerance" Target="TOLERANCE" Default="1.5" Description="Acceptable +/- band around the target." Type="Variable" Display="advanced" Required="false" Mask="false"/>
+  <Config Name="Initial CRF" Target="INITIAL_CRF" Default="22" Description="Search starting point." Type="Variable" Display="advanced" Required="false" Mask="false"/>
+  <Config Name="Min CRF (worst)" Target="MIN_CRF" Default="28" Description="Highest CRF number the search may use." Type="Variable" Display="advanced" Required="false" Mask="false"/>
+  <Config Name="Max CRF (best)" Target="MAX_CRF" Default="18" Description="Lowest CRF number the search may use." Type="Variable" Display="advanced" Required="false" Mask="false"/>
+  <Config Name="Manual CRF/QP" Target="MANUAL_CRF" Default="23" Description="Used only when Optimize = false." Type="Variable" Display="advanced" Required="false" Mask="false"/>
+  <Config Name="Scale height" Target="HEIGHT" Default="0" Description="0 = keep source resolution. e.g. 1080 downscales to 1080p." Type="Variable" Display="advanced" Required="false" Mask="false"/>
+  <Config Name="Remux original streams" Target="REMUX" Default="true|false" Description="Copy all audio/subs/attachments/chapters from the source." Type="Variable" Display="advanced" Required="false" Mask="false"/>
+  <Config Name="Output container" Target="OUTPUT_CONTAINER" Default="mkv|mp4" Description="Output file type." Type="Variable" Display="advanced" Required="false" Mask="false"/>
+  <Config Name="Output suffix" Target="OUTPUT_SUFFIX" Default="_gm" Description="Appended to the filename." Type="Variable" Display="advanced" Required="false" Mask="false"/>
+  <Config Name="Output subdirectory" Target="OUTPUT_SUBDIR" Default="SAME_AS_SRC" Description="SAME_AS_SRC = mirror the input folder structure. Empty = flat into /output. Or a fixed folder name." Type="Variable" Display="advanced" Required="false" Mask="false"/>
+
+  <!-- ================= WATCH BEHAVIOUR (dropdowns) ================= -->
+  <Config Name="After success" Target="SOURCE_ACTION" Default="move|keep|delete" Description="What to do with the source after a successful encode. move = to input/done." Type="Variable" Display="always" Required="false" Mask="false"/>
+  <Config Name="Keep larger output" Target="KEEP_LARGER" Default="true|false" Description="false = discard the result if it is not smaller than the source." Type="Variable" Display="advanced" Required="false" Mask="false"/>
+  <Config Name="Poll interval (s)" Target="WATCH_INTERVAL" Default="15" Description="How often to scan the input share." Type="Variable" Display="advanced" Required="false" Mask="false"/>
+  <Config Name="File stable (s)" Target="FILE_STABLE_SECONDS" Default="20" Description="Wait this long after the last write before encoding (avoids partial copies)." Type="Variable" Display="advanced" Required="false" Mask="false"/>
+  <Config Name="Scan existing on start" Target="SCAN_EXISTING" Default="true|false" Description="Process files already present when the container starts." Type="Variable" Display="advanced" Required="false" Mask="false"/>
+  <Config Name="Input extensions" Target="INPUT_EXTENSIONS" Default="mp4,mkv,mov,avi,m4v,webm,ts,wmv,flv" Description="Comma-separated list of file types to watch." Type="Variable" Display="advanced" Required="false" Mask="false"/>
+  <Config Name="VAAPI render device" Target="VAAPI_DEVICE" Default="/dev/dri/renderD128" Description="Only for *_vaapi codecs." Type="Variable" Display="advanced" Required="false" Mask="false"/>
+
+  <!-- ================= NVIDIA (only used with --runtime=nvidia) ================= -->
+  <Config Name="NVIDIA_VISIBLE_DEVICES" Target="NVIDIA_VISIBLE_DEVICES" Default="all" Description="Your GPU UUID from the Nvidia-Driver plugin page (e.g. GPU-xxxxxxxx-...), or 'all'." Type="Variable" Display="advanced" Required="false" Mask="false"/>
+  <Config Name="NVIDIA_DRIVER_CAPABILITIES" Target="NVIDIA_DRIVER_CAPABILITIES" Default="all" Description="Leave as 'all' for NVENC." Type="Variable" Display="advanced" Required="false" Mask="false"/>
+
+  <!-- ================= SYSTEM ================= -->
+  <Config Name="PUID" Target="PUID" Default="99" Description="User id for output files (Unraid = 99)." Type="Variable" Display="advanced" Required="false" Mask="false"/>
+  <Config Name="PGID" Target="PGID" Default="100" Description="Group id for output files (Unraid = 100)." Type="Variable" Display="advanced" Required="false" Mask="false"/>
+  <Config Name="UMASK" Target="UMASK" Default="022" Description="File creation mask." Type="Variable" Display="advanced" Required="false" Mask="false"/>
+  <Config Name="TZ" Target="TZ" Default="Europe/Amsterdam" Description="Timezone." Type="Variable" Display="advanced" Required="false" Mask="false"/>
+</Container>
