@@ -37,9 +37,16 @@ FROM debian:bookworm-slim
 ARG FFMPEG_URL=https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-linux64-gpl.tar.xz
 
 # non-free needed for Intel iHD (newer QSV). mesa-va-drivers covers AMD VAAPI.
+# bookworm-slim ships the deb822 debian.sources (with Signed-By), so enable the
+# extra components IN that file rather than adding a conflicting second source.
 RUN set -eux; \
-    echo "deb http://deb.debian.org/debian bookworm main contrib non-free non-free-firmware" \
-        > /etc/apt/sources.list.d/nonfree.list; \
+    if [ -f /etc/apt/sources.list.d/debian.sources ]; then \
+        sed -i 's/^Components: main/Components: main contrib non-free non-free-firmware/' \
+            /etc/apt/sources.list.d/debian.sources; \
+    else \
+        echo "deb http://deb.debian.org/debian bookworm main contrib non-free non-free-firmware" \
+            >> /etc/apt/sources.list; \
+    fi; \
     apt-get update; \
     apt-get install -y --no-install-recommends \
         ca-certificates curl xz-utils tzdata gosu \
