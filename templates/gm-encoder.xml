@@ -33,8 +33,8 @@
   <DonateLink/>
 
   <!-- ================= PATHS ================= -->
-  <Config Name="Input share" Target="/input" Default="/mnt/user/media/encode_in" Mode="rw" Description="Drop videos here to encode (scanned recursively)." Type="Path" Display="always" Required="true" Mask="false"/>
-  <Config Name="Output share" Target="/output" Default="/mnt/user/media/encode_out" Mode="rw" Description="Encoded files land here." Type="Path" Display="always" Required="true" Mask="false"/>
+  <Config Name="Input share" Target="/input" Default="/mnt/user/media/GM-Encoder/encode_in" Mode="rw" Description="Drop videos here to encode (scanned recursively)." Type="Path" Display="always" Required="true" Mask="false"/>
+  <Config Name="Output share" Target="/output" Default="/mnt/user/media/GM-Encoder/encode_out" Mode="rw" Description="Encoded files land here." Type="Path" Display="always" Required="true" Mask="false"/>
   <Config Name="Config/appdata" Target="/config" Default="/mnt/user/appdata/gm-encoder" Mode="rw" Description="Logs + state (processed/failed lists)." Type="Path" Display="always" Required="true" Mask="false"/>
 
   <!-- ================= ENCODER (dropdowns) ================= -->
