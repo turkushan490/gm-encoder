@@ -70,6 +70,9 @@
   pre{background:var(--console);border:1px solid var(--bd);border-radius:6px;padding:10px;max-height:280px;overflow:auto;
     font:12px/1.5 Consolas,ui-monospace,monospace;margin:0;white-space:pre-wrap;word-break:break-word;color:#cfe0ff}
   ::-webkit-scrollbar{width:9px;height:9px}::-webkit-scrollbar-thumb{background:rgba(96,165,250,.35);border-radius:5px}
+  .help td:first-child{white-space:nowrap;font-weight:600}
+  .help code{background:rgba(0,8,20,.5);border:1px solid var(--bd);border-radius:4px;padding:1px 6px;font:12px Consolas,monospace;color:#cfe0ff}
+  .notes p{margin:6px 0;font-size:13px} .notes b{color:#eef4ff}
   @media(max-width:820px){main{grid-template-columns:1fr}}
 </style>
 </head>
@@ -93,6 +96,25 @@
     <div class="grid2" style="margin-top:12px">
       <div><label>CPU</label><div class="bar cpu"><span id="cpu"></span><div class="lbl" id="cpuLbl">–</div></div></div>
       <div><label>GPU</label><div class="bar gpu"><span id="gpu"></span><div class="lbl" id="gpuLbl">–</div></div></div>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>Which codec should I use?</h2>
+    <table class="help">
+      <thead><tr><th>Your server GPU</th><th>Pick Codec</th><th>Extra Parameters (Unraid)</th></tr></thead>
+      <tbody>
+        <tr><td>NVIDIA</td><td><b>hevc_nvenc</b> · av1_nvenc (RTX 40+)</td><td><code>--runtime=nvidia --device /dev/dri:/dev/dri/</code></td></tr>
+        <tr><td>Intel iGPU</td><td><b>hevc_qsv</b> · av1_qsv</td><td><code>--device /dev/dri:/dev/dri/</code></td></tr>
+        <tr><td>AMD (no NVIDIA)</td><td>hevc_vaapi <span class="mut">(manual only — set Optimize off)</span></td><td><code>--device /dev/dri:/dev/dri/</code></td></tr>
+        <tr><td>No GPU / smallest</td><td><b>libx265</b> · libsvtav1</td><td><span class="mut">(leave empty)</span></td></tr>
+        <tr><td>Not sure</td><td><b>auto</b> <span class="mut">(detects NVENC/QSV, else CPU)</span></td><td>match your GPU above</td></tr>
+      </tbody>
+    </table>
+    <div class="notes">
+      <p><b>VMAF target:</b> 95 = archival · <b>93 = high (recommended)</b> · 90 = smaller files</p>
+      <p><b>Optimize ON</b> = searches the best CRF for the VMAF target · <b>OFF</b> = fixed Manual CRF/QP</p>
+      <p>⚠️ <b>VAAPI can't run on NVIDIA.</b> On an NVIDIA box always use <b>hevc_nvenc</b>.</p>
     </div>
   </section>
 
