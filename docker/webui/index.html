@@ -5,44 +5,71 @@
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 <title>GM Encoder</title>
 <style>
+  /* palette lifted from the Windows app XAML */
   :root{
-    --bg:#0d1117; --panel:#161b22; --panel2:#1c2230; --bd:#30363d;
-    --tx:#c9d1d9; --mut:#8b949e; --acc:#f78166; --grn:#3fb950; --blu:#58a6ff;
-    --yel:#d29922; --pur:#bc8cff; --red:#f85149;
+    --blue:#60a5fa; --blue-dim:#3b82f6; --blue-lt:#93c5fd;
+    --tx:#eef4ff; --mut:#b4c6e7;
+    --grn:#22c55e; --grn2:#16a34a; --grn-lt:#86efac;
+    --amber:#fbbf24; --amber-b:rgba(245,158,11,.5);
+    --pur:#a78bfa; --pur-b:rgba(167,139,250,.5);
+    --red:#ef4444; --red-lt:#fca5a5;
+    --track:#0a1428; --console:#000814;
+    --panel:rgba(255,255,255,.06); --panel2:rgba(255,255,255,.10);
+    --bd:rgba(96,165,250,.30);
   }
   *{box-sizing:border-box}
-  body{margin:0;background:var(--bg);color:var(--tx);font:14px/1.5 -apple-system,Segoe UI,Roboto,sans-serif}
-  header{display:flex;align-items:center;gap:14px;padding:14px 20px;background:var(--panel);border-bottom:1px solid var(--bd);position:sticky;top:0;z-index:5}
-  header h1{font-size:18px;margin:0;font-weight:700}
-  header .logo{width:30px;height:30px;border-radius:7px;background:linear-gradient(135deg,#1e3a8a,#0e2b5a);display:flex;align-items:center;justify-content:center;font-weight:800;color:#eef4ff;font-size:13px}
-  .badge{padding:3px 10px;border-radius:20px;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.5px}
-  .b-idle{background:#21262d;color:var(--mut)} .b-encoding{background:#132e1a;color:var(--grn)}
-  .b-paused{background:#3a2e12;color:var(--yel)} .b-stopping{background:#3a1616;color:var(--red)}
+  body{margin:0;min-height:100vh;color:var(--tx);
+    font:14px/1.5 "Segoe UI",-apple-system,Roboto,sans-serif;
+    background:radial-gradient(circle at 50% 22%, #3b6bc8 0%, #1e3a8a 55%, #0f2150 100%) fixed;}
+  header{display:flex;align-items:center;gap:14px;padding:13px 20px;
+    background:rgba(15,33,80,.55);border-bottom:1px solid var(--bd);
+    position:sticky;top:0;z-index:5;backdrop-filter:blur(6px)}
+  header h1{font-size:19px;margin:0;font-weight:700;letter-spacing:.3px}
+  .logo{width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,#3b6bc8,#0f2150);
+    display:flex;align-items:center;justify-content:center;font-weight:800;color:#eef4ff;font-size:13px;
+    border:1px solid rgba(147,197,253,.5)}
+  .badge{padding:3px 11px;border-radius:20px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px}
+  .b-idle{background:rgba(255,255,255,.10);color:var(--mut)}
+  .b-encoding{background:rgba(34,197,94,.20);color:var(--grn-lt)}
+  .b-paused{background:rgba(245,158,11,.20);color:#fcd34d}
+  .b-stopping{background:rgba(239,68,68,.20);color:var(--red-lt)}
   .spacer{flex:1}
-  .btn{background:var(--panel2);color:var(--tx);border:1px solid var(--bd);border-radius:6px;padding:7px 14px;cursor:pointer;font-size:13px;font-weight:600}
-  .btn:hover{border-color:var(--acc)} .btn.acc{background:var(--acc);color:#111;border-color:var(--acc)}
-  .btn.warn{border-color:var(--yel)} .btn.danger{border-color:var(--red);color:var(--red)}
-  .btn:disabled{opacity:.4;cursor:not-allowed}
+  .pill{font:11px ui-monospace,Consolas,monospace;background:rgba(0,8,20,.5);border:1px solid var(--bd);border-radius:5px;padding:3px 8px;color:var(--mut)}
+  .btn{background:rgba(255,255,255,.08);color:var(--tx);border:1px solid var(--bd);border-radius:6px;
+    padding:7px 15px;cursor:pointer;font:600 13px "Segoe UI";transition:.15s}
+  .btn:hover{background:rgba(96,165,250,.28);border-color:var(--blue-lt)}
+  .btn.acc{background:var(--blue);color:#08131f;border-color:var(--blue-lt)}
+  .btn.acc:hover{background:var(--blue-lt)}
+  .btn.warn{background:var(--amber);color:#3a2a00;border-color:#fcd34d}
+  .btn.danger{background:var(--red);color:#fff;border-color:var(--red-lt)}
   main{max-width:1200px;margin:0 auto;padding:20px;display:grid;gap:16px;grid-template-columns:1fr 1fr}
-  .card{background:var(--panel);border:1px solid var(--bd);border-radius:10px;padding:16px}
-  .card h2{margin:0 0 12px;font-size:13px;text-transform:uppercase;letter-spacing:.6px;color:var(--mut)}
+  .card{background:var(--panel);border:1px solid var(--bd);border-radius:12px;padding:16px;backdrop-filter:blur(4px)}
+  .card h2{margin:0 0 12px;font-size:12px;text-transform:uppercase;letter-spacing:.7px;color:var(--mut)}
   .full{grid-column:1/-1}
-  .bar{height:22px;background:#0b0f16;border:1px solid var(--bd);border-radius:6px;overflow:hidden;position:relative}
-  .bar>span{display:block;height:100%;width:0;transition:width .4s ease;background:linear-gradient(90deg,var(--grn),#2ea043)}
-  .bar.cpu>span{background:linear-gradient(90deg,var(--yel),#b8860b)}
-  .bar.gpu>span{background:linear-gradient(90deg,var(--pur),#8957e5)}
-  .bar .lbl{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:#fff;text-shadow:0 1px 2px #000}
+  .bar{height:24px;background:var(--track);border:1px solid rgba(96,165,250,.4);border-radius:6px;overflow:hidden;position:relative}
+  .bar>span{display:block;height:100%;width:0;transition:width .4s ease;position:relative;overflow:hidden;
+    background:linear-gradient(90deg,var(--grn),var(--grn2))}
+  .bar>span::after{content:"";position:absolute;inset:0;
+    background:linear-gradient(100deg,transparent 20%,rgba(255,255,255,.28) 50%,transparent 80%);
+    background-size:220% 100%;animation:wave 2.4s linear infinite}
+  @keyframes wave{from{background-position:220% 0}to{background-position:-220% 0}}
+  .bar.cpu{border-color:var(--amber-b)} .bar.cpu>span{background:linear-gradient(90deg,var(--amber),#d29922)}
+  .bar.cpu>span::after{animation-duration:3.1s}
+  .bar.gpu{border-color:var(--pur-b)} .bar.gpu>span{background:linear-gradient(90deg,var(--pur),#8957e5)}
+  .bar.gpu>span::after{animation-duration:3.7s}
+  .bar .lbl{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.7)}
   .row{display:flex;justify-content:space-between;gap:10px;margin:6px 0}
   .mut{color:var(--mut)} .big{font-size:16px;font-weight:700}
   table{width:100%;border-collapse:collapse;font-size:13px}
-  th,td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--bd)}
+  th,td{text-align:left;padding:6px 8px;border-bottom:1px solid rgba(96,165,250,.18)}
   th{color:var(--mut);font-weight:600;font-size:12px}
   .files{max-height:260px;overflow:auto}
   label{display:block;font-size:12px;color:var(--mut);margin-bottom:3px}
-  input,select{width:100%;background:#0b0f16;color:var(--tx);border:1px solid var(--bd);border-radius:6px;padding:7px}
+  input,select{width:100%;background:#1b2d5a;color:#fff;border:1px solid var(--blue);border-radius:6px;padding:7px}
   .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-  pre{background:#0b0f16;border:1px solid var(--bd);border-radius:6px;padding:10px;max-height:280px;overflow:auto;font:12px/1.5 ui-monospace,Menlo,Consolas,monospace;margin:0;white-space:pre-wrap;word-break:break-word}
-  .pill{font:11px ui-monospace,monospace;background:#0b0f16;border:1px solid var(--bd);border-radius:5px;padding:2px 7px}
+  pre{background:var(--console);border:1px solid var(--bd);border-radius:6px;padding:10px;max-height:280px;overflow:auto;
+    font:12px/1.5 Consolas,ui-monospace,monospace;margin:0;white-space:pre-wrap;word-break:break-word;color:#cfe0ff}
+  ::-webkit-scrollbar{width:9px;height:9px}::-webkit-scrollbar-thumb{background:rgba(96,165,250,.35);border-radius:5px}
   @media(max-width:820px){main{grid-template-columns:1fr}}
 </style>
 </head>
@@ -58,7 +85,6 @@
 </header>
 
 <main>
-  <!-- Now encoding -->
   <section class="card full">
     <h2>Now encoding</h2>
     <div class="row"><div id="curFile" class="big">— idle —</div><div id="curMeta" class="mut"></div></div>
@@ -70,20 +96,17 @@
     </div>
   </section>
 
-  <!-- Files / manual encode -->
   <section class="card">
     <h2>Input files <span id="inCount" class="pill"></span>
       <button class="btn" style="float:right;padding:3px 10px" onclick="loadFiles()">↻</button></h2>
     <div class="files"><table><tbody id="fileRows"><tr><td class="mut">loading…</td></tr></tbody></table></div>
   </section>
 
-  <!-- Queue -->
   <section class="card">
     <h2>Manual queue <button class="btn" style="float:right;padding:3px 10px" onclick="control('clear_queue')">Clear</button></h2>
     <div class="files"><table><tbody id="queueRows"><tr><td class="mut">empty</td></tr></tbody></table></div>
   </section>
 
-  <!-- Settings -->
   <section class="card full">
     <h2>Settings <span class="mut" style="text-transform:none;letter-spacing:0">(applies to auto + manual jobs, no restart)</span></h2>
     <div id="settings" class="grid2"></div>
@@ -93,14 +116,12 @@
     </div>
   </section>
 
-  <!-- History -->
   <section class="card">
     <h2>Recent completed</h2>
     <table><thead><tr><th>File</th><th>Codec</th><th>CRF</th><th>VMAF</th><th>Ratio</th><th>Time</th></tr></thead>
     <tbody id="histRows"><tr><td class="mut" colspan="6">none yet</td></tr></tbody></table>
   </section>
 
-  <!-- Log -->
   <section class="card">
     <h2>Log</h2>
     <pre id="log">…</pre>
@@ -111,40 +132,31 @@
 const $=id=>document.getElementById(id);
 async function api(p,m='GET',b){const o={method:m,headers:{'Content-Type':'application/json'}};if(b)o.body=JSON.stringify(b);const r=await fetch(p,o);return r.json();}
 function setBar(el,lbl,v,txt){el.style.width=(v==null?0:Math.max(0,Math.min(100,v)))+'%';lbl.textContent=txt;}
+function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
 
 async function refresh(){
   let s; try{s=await api('/api/status');}catch(e){return;}
-  const st=s.state||'idle';
-  const badge=$('state'); badge.textContent=s.paused&&st!=='encoding'?'paused':st;
-  badge.className='badge b-'+(s.paused&&st!=='encoding'?'paused':st);
+  const st=s.state||'idle', paused=s.paused&&st!=='encoding';
+  const badge=$('state'); badge.textContent=paused?'paused':st; badge.className='badge b-'+(paused?'paused':st);
   $('codec').textContent='codec '+(s.resolved_codec||'?');
   $('btnPause').textContent=s.paused?'Resume':'Pause';
   $('btnPause').setAttribute('onclick',`control('${s.paused?'resume':'pause'}')`);
   $('inCount').textContent=(s.input_count||0)+' files';
-
   if(st==='encoding'){
     $('curFile').textContent=s.cur_file||'…';
     $('curMeta').textContent=(s.cur_res||'')+(s.size_in_mb?'  •  '+s.size_in_mb+' MB':'');
-    $('curPhase').textContent=s.phase||'';
-    $('curStep').textContent=s.step||'';
+    $('curPhase').textContent=s.phase||''; $('curStep').textContent=s.step||'';
     setBar($('prog'),$('progLbl'),s.progress||0,(s.progress||0)+'%');
   }else{
-    $('curFile').textContent='— '+(s.paused?'paused':'idle')+' —';
+    $('curFile').textContent='— '+(paused?'paused':'idle')+' —';
     $('curMeta').textContent=''; $('curPhase').textContent=''; $('curStep').textContent='';
     setBar($('prog'),$('progLbl'),0,'0%');
   }
   setBar($('cpu'),$('cpuLbl'),s.cpu,s.cpu==null?'n/a':s.cpu+'%');
   setBar($('gpu'),$('gpuLbl'),s.gpu,s.gpu==null?'n/a':s.gpu+'%');
-
-  // queue
-  const q=s.queue||[]; const qr=$('queueRows');
-  qr.innerHTML=q.length?q.map(f=>`<tr><td>${esc(f.split('/').pop())}</td></tr>`).join(''):'<tr><td class="mut">empty</td></tr>';
-  // history
-  const h=s.history||[]; const hr=$('histRows');
-  hr.innerHTML=h.length?h.map(x=>`<tr><td>${esc(x.file)}</td><td>${esc(x.codec)}</td><td>${x.crf||''}</td><td>${x.vmaf||''}</td><td>${x.ratio}%</td><td>${x.elapsed}s</td></tr>`).join(''):'<tr><td class="mut" colspan="6">none yet</td></tr>';
+  const q=s.queue||[]; $('queueRows').innerHTML=q.length?q.map(f=>`<tr><td>${esc(f.split('/').pop())}</td></tr>`).join(''):'<tr><td class="mut">empty</td></tr>';
+  const h=s.history||[]; $('histRows').innerHTML=h.length?h.map(x=>`<tr><td>${esc(x.file)}</td><td>${esc(x.codec)}</td><td>${x.crf||''}</td><td>${x.vmaf||''}</td><td>${x.ratio}%</td><td>${x.elapsed}s</td></tr>`).join(''):'<tr><td class="mut" colspan="6">none yet</td></tr>';
 }
-function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
-
 async function loadFiles(){
   const d=await api('/api/files'); const rows=$('fileRows');
   if(!d.input||!d.input.length){rows.innerHTML='<tr><td class="mut">no video files in /input</td></tr>';return;}
@@ -153,12 +165,10 @@ async function loadFiles(){
 }
 async function enc(path){await api('/api/encode','POST',{file:path});refresh();}
 async function control(a){await api('/api/control','POST',{action:a});refresh();}
-
 async function loadSettings(){
   const d=await api('/api/settings'); const box=$('settings'); box.innerHTML='';
   d.schema.forEach(f=>{
-    const v=d.values[f.key]; const w=document.createElement('div');
-    let ctrl;
+    const v=d.values[f.key]; const w=document.createElement('div'); let ctrl;
     if(f.kind==='select'){ctrl=`<select data-k="${f.key}">`+f.options.map(o=>`<option ${o==v?'selected':''}>${o}</option>`).join('')+`</select>`;}
     else{ctrl=`<input data-k="${f.key}" type="${f.kind==='number'?'number':'text'}" value="${esc(v)}" step="any"/>`;}
     w.innerHTML=`<label>${f.label}</label>${ctrl}`; box.appendChild(w);

@@ -228,7 +228,11 @@ class H(BaseHTTPRequestHandler):
             elif action == "stop":
                 open(STOPFLAG, "w").close()
                 for name in ("ffmpeg", "dynamic-crf"):
-                    subprocess.run(["pkill", "-TERM", "-x", name],
+                    subprocess.run(["pkill", "-TERM", name],
+                                   stderr=subprocess.DEVNULL, stdout=subprocess.DEVNULL)
+                time.sleep(0.8)
+                for name in ("ffmpeg", "dynamic-crf"):
+                    subprocess.run(["pkill", "-KILL", name],
                                    stderr=subprocess.DEVNULL, stdout=subprocess.DEVNULL)
             elif action == "clear_queue":
                 write_json_atomic(QUEUE, [])

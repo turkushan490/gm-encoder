@@ -13,16 +13,15 @@ IGNORE="$CONFIG_DIR/.startup_ignore"
 DONE_DIR="$INPUT_DIR/done"
 touch "$PROCESSED" "$FAILED" "$IGNORE" 2>/dev/null || true
 
-# ---- GPU / codec detection (probe a real 1-frame encode) ----
-probe_enc()   { ffmpeg -hide_banner -loglevel error -f lavfi -i color=c=black:s=256x256:d=0.1 -c:v "$1" -f null - >/dev/null 2>&1; }
-probe_vaapi() { ffmpeg -hide_banner -loglevel error -vaapi_device "$(cfg VAAPI_DEVICE)" -f lavfi -i color=c=black:s=256x256:d=0.1 -vf 'format=nv12,hwupload' -c:v "$1" -f null - >/dev/null 2>&1; }
+# ---- GPU / codec detection (list-based, like the Windows app) ----
+# NOTE: must ONLY echo the codec on stdout (captured by $(...)); log via >&2.
 cpu_for_family() { case "${1,,}" in av1) echo libsvtav1;; h264) echo libx264;; *) echo libx265;; esac; }
+encoder_listed() { ffmpeg -hide_banner -encoders 2>/dev/null | grep -qE "[[:space:]]${1}[[:space:]]"; }
 detect_codec() {
-    local fam="${1:-hevc}"
-    jlog "AUTO  probing GPU for family '$fam'..."
-    if probe_enc "${fam}_nvenc"; then echo "${fam}_nvenc"; return; fi
-    if probe_enc "${fam}_qsv";   then echo "${fam}_qsv";   return; fi
-    if probe_vaapi "${fam}_vaapi"; then echo "${fam}_vaapi"; return; fi
+    local fam="${1:-hevc}" hw
+    for hw in nvenc qsv vaapi; do
+        if encoder_listed "${fam}_${hw}"; then echo "${fam}_${hw}"; return; fi
+    done
     cpu_for_family "$fam"
 }
 RESOLVED=""; RES_FAM=""
