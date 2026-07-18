@@ -18,8 +18,10 @@ touch "$PROCESSED" "$FAILED" "$IGNORE" 2>/dev/null || true
 cpu_for_family() { case "${1,,}" in av1) echo libsvtav1;; h264) echo libx264;; *) echo libx265;; esac; }
 encoder_listed() { ffmpeg -hide_banner -encoders 2>/dev/null | grep -qE "[[:space:]]${1}[[:space:]]"; }
 detect_codec() {
+    # auto never picks VAAPI: it can't run through dynamic-crf's search
+    # (no hwupload wiring) and doesn't exist on NVIDIA. nvenc -> qsv -> CPU.
     local fam="${1:-hevc}" hw
-    for hw in nvenc qsv vaapi; do
+    for hw in nvenc qsv; do
         if encoder_listed "${fam}_${hw}"; then echo "${fam}_${hw}"; return; fi
     done
     cpu_for_family "$fam"
