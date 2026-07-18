@@ -100,6 +100,17 @@
   </section>
 
   <section class="card">
+    <h2>Input files <span id="inCount" class="pill"></span>
+      <button class="btn" style="float:right;padding:3px 10px" onclick="loadFiles()">↻</button></h2>
+    <div class="files"><table><tbody id="fileRows"><tr><td class="mut">loading…</td></tr></tbody></table></div>
+  </section>
+
+  <section class="card">
+    <h2>Manual queue <button class="btn" style="float:right;padding:3px 10px" onclick="control('clear_queue')">Clear</button></h2>
+    <div class="files"><table><tbody id="queueRows"><tr><td class="mut">empty</td></tr></tbody></table></div>
+  </section>
+
+  <section class="card full">
     <h2>Which codec should I use?</h2>
     <table class="help">
       <thead><tr><th>Your server GPU</th><th>Pick Codec</th><th>Extra Parameters (Unraid)</th></tr></thead>
@@ -116,17 +127,6 @@
       <p><b>Optimize ON</b> = searches the best CRF for the VMAF target · <b>OFF</b> = fixed Manual CRF/QP</p>
       <p>⚠️ <b>VAAPI can't run on NVIDIA.</b> On an NVIDIA box always use <b>hevc_nvenc</b>.</p>
     </div>
-  </section>
-
-  <section class="card">
-    <h2>Input files <span id="inCount" class="pill"></span>
-      <button class="btn" style="float:right;padding:3px 10px" onclick="loadFiles()">↻</button></h2>
-    <div class="files"><table><tbody id="fileRows"><tr><td class="mut">loading…</td></tr></tbody></table></div>
-  </section>
-
-  <section class="card">
-    <h2>Manual queue <button class="btn" style="float:right;padding:3px 10px" onclick="control('clear_queue')">Clear</button></h2>
-    <div class="files"><table><tbody id="queueRows"><tr><td class="mut">empty</td></tr></tbody></table></div>
   </section>
 
   <section class="card full">
