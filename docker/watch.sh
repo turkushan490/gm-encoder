@@ -83,9 +83,8 @@ banner() {
     jlog "   input=$INPUT_DIR  output=$OUTPUT_DIR  config=$CONFIG_DIR"
     jlog "   codec=$CODEC  optimize=$(cfg OPTIMIZE)  vmaf=$(cfg VMAF_TARGET)  watch_enabled=$(cfg WATCH_ENABLED)"
     jlog "   ffmpeg=$(ffmpeg -hide_banner -version 2>/dev/null | head -n1)"
-    ffmpeg -hide_banner -encoders 2>/dev/null | grep -q "\b${CODEC}\b" \
-        && jlog "   encoder '$CODEC' available: YES" \
-        || jlog "   encoder '$CODEC' available: NO (check GPU passthrough)"
+    if encoder_listed "$CODEC"; then jlog "   encoder '$CODEC' available: YES"
+    else jlog "   encoder '$CODEC' available: NO (check GPU passthrough)"; fi
     [[ "$CODEC" == *_vaapi && "$(cfg OPTIMIZE)" == "true" ]] && jlog "   WARN VAAPI+search is experimental; use OPTIMIZE=false or QSV/CPU"
     jlog "==================================================================="
 }
