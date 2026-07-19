@@ -67,6 +67,7 @@
   .files{max-height:260px;overflow:auto}
   label{display:block;font-size:12px;color:var(--mut);margin-bottom:3px}
   input,select{width:100%;background:#1b2d5a;color:#fff;border:1px solid var(--blue);border-radius:6px;padding:7px}
+  optgroup{background:#0b0f16;color:#8fb3ff;font-style:normal;font-weight:700} option{background:#1b2d5a;color:#fff;font-weight:400}
   .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
   pre{background:var(--console);border:1px solid var(--bd);border-radius:6px;padding:10px;max-height:280px;overflow:auto;
     font:12px/1.5 Consolas,ui-monospace,monospace;margin:0;white-space:pre-wrap;word-break:break-word;color:#cfe0ff}
@@ -225,7 +226,15 @@ async function loadSettings(){
   const d=await api('/api/settings'); const box=$('settings'); box.innerHTML='';
   d.schema.forEach(f=>{
     const v=d.values[f.key]; const w=document.createElement('div'); let ctrl;
-    if(f.kind==='select'){ctrl=`<select data-k="${f.key}">`+f.options.map(o=>`<option ${o==v?'selected':''}>${o}</option>`).join('')+`</select>`;}
+    if(f.kind==='select'){
+      let inner;
+      if(f.options.length && Array.isArray(f.options[0])){
+        inner=f.options.map(g=>`<optgroup label="${esc(g[0])}">`+g[1].map(o=>`<option ${o==v?'selected':''}>${esc(o)}</option>`).join('')+`</optgroup>`).join('');
+      }else{
+        inner=f.options.map(o=>`<option ${o==v?'selected':''}>${esc(o)}</option>`).join('');
+      }
+      ctrl=`<select data-k="${f.key}">${inner}</select>`;
+    }
     else{ctrl=`<input data-k="${f.key}" type="${f.kind==='number'?'number':'text'}" value="${esc(v)}" step="any"/>`;}
     w.innerHTML=`<label>${f.label}</label>${ctrl}`; box.appendChild(w);
   });

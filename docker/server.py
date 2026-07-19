@@ -26,9 +26,14 @@ VIDEO_EXT = (".mp4", ".mkv", ".mov", ".avi", ".m4v", ".webm", ".ts", ".wmv", ".f
 # key -> (label, kind, options, env-default)
 SCHEMA = [
     ("CODEC", "Codec / GPU", "select",
-     ["auto","nvidia","intel","amd","cpu",
-      "hevc_nvenc","av1_nvenc","h264_nvenc","hevc_qsv","av1_qsv","h264_qsv",
-      "hevc_vaapi","av1_vaapi","h264_vaapi","libx265","libsvtav1","libx264"], "auto"),
+     [["Auto", ["auto"]],
+      ["Dedicated GPU", ["nvidia", "amd", "intel"]],
+      ["iGPU (built into CPU)", ["intel", "amd"]],
+      ["CPU (software)", ["cpu"]],
+      ["Specific encoder", ["hevc_nvenc", "av1_nvenc", "h264_nvenc",
+                            "hevc_qsv", "av1_qsv", "h264_qsv",
+                            "hevc_vaapi", "av1_vaapi", "h264_vaapi",
+                            "libx265", "libsvtav1", "libx264"]]], "auto"),
     ("FAMILY", "Family (nvidia/intel/amd/cpu/auto)", "select", ["hevc","av1","h264"], "hevc"),
     ("OPTIMIZE", "Optimize (VMAF search)", "select", ["true","false"], "true"),
     ("VMAF_TARGET", "VMAF target quality", "number", None, "93"),
