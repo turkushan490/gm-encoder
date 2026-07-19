@@ -129,7 +129,7 @@
       </tbody>
     </table>
     <div class="notes">
-      <p><b>VMAF target:</b> 95 = archival · <b>93 = high (recommended)</b> · 90 = smaller files</p>
+      <p><b>VMAF minimum:</b> accepts anything from this up to 100 (no upper limit) and picks the smallest file that still meets it. 95 = archival · <b>93 = high (recommended)</b> · 90 = smaller. CRF range: Max CRF = best/lowest number, Min CRF = worst/highest.</p>
       <p><b>Optimize ON</b> = searches the best CRF for the VMAF target · <b>OFF</b> = fixed Manual CRF/QP</p>
       <p>💡 <b>Tip:</b> in the Codec box you can just pick <b>nvidia / intel / amd / cpu</b> and it combines with <b>Family</b> (e.g. nvidia + hevc = hevc_nvenc).</p>
       <p>📉 <b>To make files smaller:</b> use <b>cpu</b> (libx265 / libsvtav1). Hardware encoders (NVENC/QSV) are fast but can make already-compressed video <b>bigger</b> — set <b>Keep output even if bigger = false</b> to auto-discard those.</p>
