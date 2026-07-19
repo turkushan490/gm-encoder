@@ -45,6 +45,27 @@ apply_codec() {   # sets global CODEC from Codec(+Family) choice, exports it
     st_set resolved_codec str "$CODEC"
 }
 
+# ---- GPU busy check: don't start a GPU encode while the GPU is under load ----
+GPU_BUSY_STATE=0
+gpu_busy() {
+    [[ "$(cfg GPU_BUSY_WAIT | tr 'A-Z' 'a-z')" == "true" ]] || return 1
+    command -v nvidia-smi >/dev/null 2>&1 || return 1
+    local out util memu memt vpct
+    out="$(nvidia-smi --query-gpu=utilization.gpu,memory.used,memory.total --format=csv,noheader,nounits 2>/dev/null | head -n1)"
+    [[ -z "$out" ]] && return 1
+    util=$(awk -F',' '{gsub(/[^0-9]/,"",$1); print $1+0}' <<<"$out")
+    memu=$(awk -F',' '{gsub(/[^0-9]/,"",$2); print $2+0}' <<<"$out")
+    memt=$(awk -F',' '{gsub(/[^0-9]/,"",$3); print $3+0}' <<<"$out")
+    (( memt == 0 )) && return 1
+    vpct=$(( memu * 100 / memt ))
+    if (( util >= $(cfg GPU_BUSY_UTIL) )) || (( vpct >= $(cfg GPU_BUSY_VRAM) )); then
+        if (( GPU_BUSY_STATE == 0 )); then jlog "GPU busy (util=${util}% vram=${vpct}%) - waiting until free"; GPU_BUSY_STATE=1; fi
+        st_set state str "gpu-busy"; return 0
+    fi
+    (( GPU_BUSY_STATE == 1 )) && { jlog "GPU free again - resuming"; GPU_BUSY_STATE=0; }
+    return 1
+}
+
 # export effective settings so encode.sh sees GUI overrides via the environment
 export_settings() {
     local k v
@@ -152,6 +173,11 @@ while true; do
     export_settings
     apply_codec
     st_set watch_enabled str "$(cfg WATCH_ENABLED)"
+
+    # hold off while the GPU is busy (only relevant for hardware encoders)
+    if [[ "$CODEC" == *_nvenc || "$CODEC" == *_qsv || "$CODEC" == *_vaapi ]] && gpu_busy; then
+        sleep "$(cfg WATCH_INTERVAL)"; continue
+    fi
 
     process_manual_queue
 

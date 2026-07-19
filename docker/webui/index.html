@@ -33,6 +33,7 @@
   .b-encoding{background:rgba(34,197,94,.20);color:var(--grn-lt)}
   .b-paused{background:rgba(245,158,11,.20);color:#fcd34d}
   .b-stopping{background:rgba(239,68,68,.20);color:var(--red-lt)}
+  .b-gpu-busy{background:rgba(245,158,11,.20);color:#fcd34d}
   .spacer{flex:1}
   .pill{font:11px ui-monospace,Consolas,monospace;background:rgba(0,8,20,.5);border:1px solid var(--bd);border-radius:5px;padding:3px 8px;color:var(--mut)}
   .btn{background:rgba(255,255,255,.08);color:var(--tx);border:1px solid var(--bd);border-radius:6px;
@@ -101,7 +102,12 @@
 
   <section class="card">
     <h2>Input files <span id="inCount" class="pill"></span>
-      <button class="btn" style="float:right;padding:3px 10px" onclick="loadFiles()">↻</button></h2>
+      <span style="float:right">
+        <input type="file" id="up" accept="video/*,.mkv,.mp4,.mov,.avi,.m4v,.webm,.ts" style="display:none" onchange="upload()"/>
+        <button class="btn" style="padding:3px 10px" onclick="document.getElementById('up').click()">⬆ Upload</button>
+        <button class="btn" style="padding:3px 10px" onclick="loadFiles()">↻</button>
+      </span></h2>
+    <div id="upMsg" class="mut" style="font-size:12px;min-height:16px"></div>
     <div class="files"><table><tbody id="fileRows"><tr><td class="mut">loading…</td></tr></tbody></table></div>
   </section>
 
@@ -126,6 +132,7 @@
       <p><b>VMAF target:</b> 95 = archival · <b>93 = high (recommended)</b> · 90 = smaller files</p>
       <p><b>Optimize ON</b> = searches the best CRF for the VMAF target · <b>OFF</b> = fixed Manual CRF/QP</p>
       <p>💡 <b>Tip:</b> in the Codec box you can just pick <b>nvidia / intel / amd / cpu</b> and it combines with <b>Family</b> (e.g. nvidia + hevc = hevc_nvenc).</p>
+      <p>📉 <b>To make files smaller:</b> use <b>cpu</b> (libx265 / libsvtav1). Hardware encoders (NVENC/QSV) are fast but can make already-compressed video <b>bigger</b> — set <b>Keep output even if bigger = false</b> to auto-discard those.</p>
       <p>⚠️ <b>VAAPI can't run on NVIDIA.</b> On an NVIDIA box use <b>nvidia</b> (or hevc_nvenc).</p>
     </div>
   </section>
@@ -137,6 +144,11 @@
       <button class="btn acc" onclick="saveSettings()">Save settings</button>
       <span id="saveMsg" class="mut"></span>
     </div>
+  </section>
+
+  <section class="card full">
+    <h2>Output files — download <button class="btn" style="float:right;padding:3px 10px" onclick="loadOutputs()">↻</button></h2>
+    <div class="files"><table><tbody id="outRows"><tr><td class="mut">no output files yet</td></tr></tbody></table></div>
   </section>
 
   <section class="card">
@@ -187,6 +199,20 @@ async function loadFiles(){
     <td style="text-align:right"><button class="btn" style="padding:3px 10px" onclick='enc(${JSON.stringify(f.path)})'>Encode</button></td></tr>`).join('');
 }
 async function enc(path){await api('/api/encode','POST',{file:path});refresh();}
+async function upload(){
+  const inp=$('up'); if(!inp.files.length) return;
+  const f=inp.files[0]; $('upMsg').textContent='uploading '+f.name+' ('+(f.size/1048576).toFixed(1)+' MB)…';
+  try{ await fetch('/api/upload?name='+encodeURIComponent(f.name),{method:'POST',body:f});
+    $('upMsg').textContent='uploaded ✓ '+f.name+' — now in Input files'; }
+  catch(e){ $('upMsg').textContent='upload failed'; }
+  inp.value=''; loadFiles(); setTimeout(()=>$('upMsg').textContent='',6000);
+}
+async function loadOutputs(){
+  const d=await api('/api/outputs'); const rows=$('outRows');
+  rows.innerHTML=(d.outputs&&d.outputs.length)?d.outputs.map(o=>`<tr><td>${esc(o.rel)}</td>
+    <td class="mut" style="white-space:nowrap">${o.size_mb} MB</td>
+    <td style="text-align:right"><a class="btn" style="padding:3px 12px;text-decoration:none" href="/api/download?file=${encodeURIComponent(o.rel)}">⬇ Download</a></td></tr>`).join(''):'<tr><td class="mut">no output files yet</td></tr>';
+}
 async function control(a){await api('/api/control','POST',{action:a});refresh();}
 async function loadSettings(){
   const d=await api('/api/settings'); const box=$('settings'); box.innerHTML='';
@@ -204,8 +230,8 @@ async function saveSettings(){
 }
 async function loadLog(){const d=await api('/api/log?lines=160');const p=$('log');const atBottom=p.scrollTop+p.clientHeight>=p.scrollHeight-20;p.textContent=(d.lines||[]).join('\n');if(atBottom)p.scrollTop=p.scrollHeight;}
 
-loadSettings(); loadFiles(); refresh(); loadLog();
-setInterval(refresh,1500); setInterval(loadLog,2500); setInterval(loadFiles,10000);
+loadSettings(); loadFiles(); loadOutputs(); refresh(); loadLog();
+setInterval(refresh,1500); setInterval(loadLog,2500); setInterval(loadFiles,10000); setInterval(loadOutputs,10000);
 </script>
 </body>
 </html>

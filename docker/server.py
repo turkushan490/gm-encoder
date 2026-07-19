@@ -43,7 +43,10 @@ SCHEMA = [
     ("OUTPUT_SUFFIX", "Output suffix", "text", None, "_gm"),
     ("OUTPUT_SUBDIR", "Output subdir", "text", None, "SAME_AS_SRC"),
     ("SOURCE_ACTION", "After success", "select", ["move","keep","delete"], "move"),
-    ("KEEP_LARGER", "Keep larger output", "select", ["true","false"], "true"),
+    ("KEEP_LARGER", "Keep output even if bigger", "select", ["true","false"], "true"),
+    ("GPU_BUSY_WAIT", "Wait if GPU is busy", "select", ["false","true"], "false"),
+    ("GPU_BUSY_UTIL", "GPU-busy util % (wait above)", "number", None, "40"),
+    ("GPU_BUSY_VRAM", "GPU-busy VRAM % (wait above)", "number", None, "50"),
     ("WATCH_ENABLED", "Auto watch-folder", "select", ["true","false"], "true"),
     ("WATCH_INTERVAL", "Poll interval (s)", "number", None, "15"),
     ("FILE_STABLE_SECONDS", "File stable (s)", "number", None, "20"),
@@ -98,6 +101,21 @@ def list_input():
                 items.append({"path": full,
                               "rel": os.path.relpath(full, INPUT_DIR),
                               "size_mb": round(sz / 1048576, 1)})
+    return items[:500]
+
+def list_outputs():
+    items = []
+    for root, _, files in os.walk(OUTPUT_DIR):
+        for fn in sorted(files):
+            if fn.startswith(".") or fn.endswith(".part"):
+                continue
+            full = os.path.join(root, fn)
+            try:
+                sz = os.path.getsize(full)
+            except OSError:
+                sz = 0
+            items.append({"rel": os.path.relpath(full, OUTPUT_DIR),
+                          "size_mb": round(sz / 1048576, 1)})
     return items[:500]
 
 _cpu_prev = {"t": None}
@@ -189,6 +207,29 @@ class H(BaseHTTPRequestHandler):
                                                for (k, l, kd, o, _) in SCHEMA]})
         if path == "/api/files":
             return self._send(200, {"input": list_input(), "input_dir": INPUT_DIR})
+        if path == "/api/outputs":
+            return self._send(200, {"outputs": list_outputs()})
+        if path == "/api/download":
+            rel = q.get("file", [""])[0]
+            full = os.path.realpath(os.path.join(OUTPUT_DIR, rel))
+            if not full.startswith(os.path.realpath(OUTPUT_DIR)) or not os.path.isfile(full):
+                return self._send(404, {"error": "not found"})
+            try:
+                fsize = os.path.getsize(full)
+                self.send_response(200)
+                self.send_header("Content-Type", "application/octet-stream")
+                self.send_header("Content-Disposition", f'attachment; filename="{os.path.basename(full)}"')
+                self.send_header("Content-Length", str(fsize))
+                self.end_headers()
+                with open(full, "rb") as f:
+                    while True:
+                        chunk = f.read(1 << 20)
+                        if not chunk:
+                            break
+                        self.wfile.write(chunk)
+            except (BrokenPipeError, ConnectionResetError):
+                pass
+            return
         if path == "/api/log":
             n = int((q.get("lines", ["200"])[0]))
             return self._send(200, {"lines": [l.rstrip("\n") for l in tail(LOGFILE, n)]})
@@ -200,7 +241,29 @@ class H(BaseHTTPRequestHandler):
         return self._send(404, {"error": "not found"})
 
     def do_POST(self):
-        path = urlparse(self.path).path
+        u = urlparse(self.path); path = u.path
+        if path == "/api/upload":
+            name = os.path.basename(parse_qs(u.query).get("name", [""])[0])
+            if not name or name.startswith("."):
+                return self._send(400, {"error": "bad name"})
+            os.makedirs(INPUT_DIR, exist_ok=True)
+            dest = os.path.join(INPUT_DIR, name)
+            n = int(self.headers.get("Content-Length", 0) or 0)
+            written = 0
+            try:
+                with open(dest + ".part", "wb") as f:
+                    remaining = n
+                    while remaining > 0:
+                        chunk = self.rfile.read(min(1 << 20, remaining))
+                        if not chunk:
+                            break
+                        f.write(chunk); remaining -= len(chunk); written += len(chunk)
+                os.replace(dest + ".part", dest)
+            except Exception as e:
+                try: os.remove(dest + ".part")
+                except OSError: pass
+                return self._send(500, {"error": str(e)})
+            return self._send(200, {"ok": True, "name": name, "bytes": written})
         if path == "/api/settings":
             body = self._body()
             saved = read_json(SETTINGS, {})

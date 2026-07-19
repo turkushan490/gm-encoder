@@ -109,6 +109,10 @@ ENV \
     SOURCE_ACTION=move \
     KEEP_LARGER=true \
     MIN_SHRINK_PERCENT=0 \
+    # --- wait while GPU is busy (needs nvidia-smi / --runtime=nvidia) ---
+    GPU_BUSY_WAIT=false \
+    GPU_BUSY_UTIL=40 \
+    GPU_BUSY_VRAM=50 \
     # --- web GUI ---
     GUI_PORT=8080 \
     # --- nvidia (only used when started with --runtime=nvidia) ---
