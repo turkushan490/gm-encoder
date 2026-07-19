@@ -281,6 +281,21 @@ class H(BaseHTTPRequestHandler):
             if full not in qn:
                 qn.append(full); write_json_atomic(QUEUE, qn)
             return self._send(200, {"ok": True, "queued": full})
+        if path == "/api/delete":
+            body = self._body()
+            which = body.get("dir", "")
+            rel = body.get("file", "")
+            base = {"input": INPUT_DIR, "output": OUTPUT_DIR}.get(which)
+            if base is None:
+                return self._send(400, {"error": "bad dir"})
+            full = os.path.realpath(os.path.join(base, rel))
+            if not full.startswith(os.path.realpath(base)) or not os.path.isfile(full):
+                return self._send(400, {"error": "not found / outside dir"})
+            try:
+                os.remove(full)
+            except OSError as e:
+                return self._send(500, {"error": str(e)})
+            return self._send(200, {"ok": True, "deleted": rel})
         if path == "/api/control":
             action = self._body().get("action", "")
             rt = read_json(RUNTIME, {"paused": False})

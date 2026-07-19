@@ -196,9 +196,15 @@ async function loadFiles(){
   const d=await api('/api/files'); const rows=$('fileRows');
   if(!d.input||!d.input.length){rows.innerHTML='<tr><td class="mut">no video files in /input</td></tr>';return;}
   rows.innerHTML=d.input.map(f=>`<tr><td>${esc(f.rel)}</td><td class="mut" style="white-space:nowrap">${f.size_mb} MB</td>
-    <td style="text-align:right"><button class="btn" style="padding:3px 10px" onclick='enc(${JSON.stringify(f.path)})'>Encode</button></td></tr>`).join('');
+    <td style="text-align:right;white-space:nowrap"><button class="btn" style="padding:3px 10px" onclick='enc(${JSON.stringify(f.path)})'>Encode</button>
+    <button class="btn danger" style="padding:3px 9px;margin-left:5px" title="Delete" onclick='del("input",${JSON.stringify(f.rel)})'>✕</button></td></tr>`).join('');
 }
 async function enc(path){await api('/api/encode','POST',{file:path});refresh();}
+async function del(dir,rel){
+  if(!confirm('Delete this file from '+dir+'?\n\n'+rel)) return;
+  await api('/api/delete','POST',{dir:dir,file:rel});
+  if(dir==='input') loadFiles(); else loadOutputs();
+}
 async function upload(){
   const inp=$('up'); if(!inp.files.length) return;
   const f=inp.files[0]; $('upMsg').textContent='uploading '+f.name+' ('+(f.size/1048576).toFixed(1)+' MB)…';
@@ -211,7 +217,8 @@ async function loadOutputs(){
   const d=await api('/api/outputs'); const rows=$('outRows');
   rows.innerHTML=(d.outputs&&d.outputs.length)?d.outputs.map(o=>`<tr><td>${esc(o.rel)}</td>
     <td class="mut" style="white-space:nowrap">${o.size_mb} MB</td>
-    <td style="text-align:right"><a class="btn" style="padding:3px 12px;text-decoration:none" href="/api/download?file=${encodeURIComponent(o.rel)}">⬇ Download</a></td></tr>`).join(''):'<tr><td class="mut">no output files yet</td></tr>';
+    <td style="text-align:right;white-space:nowrap"><a class="btn" style="padding:3px 12px;text-decoration:none" href="/api/download?file=${encodeURIComponent(o.rel)}">⬇ Download</a>
+    <button class="btn danger" style="padding:3px 9px;margin-left:5px" title="Delete" onclick='del("output",${JSON.stringify(o.rel)})'>✕</button></td></tr>`).join(''):'<tr><td class="mut">no output files yet</td></tr>';
 }
 async function control(a){await api('/api/control','POST',{action:a});refresh();}
 async function loadSettings(){
