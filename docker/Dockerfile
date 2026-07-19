@@ -114,7 +114,7 @@ ENV \
     GPU_BUSY_UTIL=40 \
     GPU_BUSY_VRAM=50 \
     # --- web GUI ---
-    GUI_PORT=8080 \
+    GUI_PORT=4805 \
     # --- nvidia (only used when started with --runtime=nvidia) ---
     NVIDIA_VISIBLE_DEVICES=all \
     NVIDIA_DRIVER_CAPABILITIES=all \
@@ -124,7 +124,7 @@ ENV \
     UMASK=022 \
     TZ=Etc/UTC
 
-EXPOSE 8080
+EXPOSE 4805
 VOLUME ["/input", "/output", "/config"]
 
 ENTRYPOINT ["/app/entrypoint.sh"]

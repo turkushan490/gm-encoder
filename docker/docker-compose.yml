@@ -9,7 +9,7 @@ services:
     image: gm-encoder:local
     container_name: gm-encoder
     ports:
-      - "8080:8080"          # web control panel -> http://localhost:8080
+      - "4805:4805"          # web control panel -> http://localhost:4805
     # For Intel QSV / AMD VAAPI: expose the render node.
     devices:
       - /dev/dri:/dev/dri

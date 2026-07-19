@@ -45,18 +45,16 @@ q="${MANUAL_CRF}"; found_crf=0; found_vmaf=0
 
 if [[ "${OPTIMIZE,,}" == "true" ]]; then
     # ---- VMAF search + final encode via dynamic-crf, with live phase bar ----
-    # VMAF_TARGET is treated as a MINIMUM (accept >= this, up to 100). Map it to
-    # dynamic-crf's symmetric target±tolerance so the accepted band is [min,100].
-    vmin="$(cfg VMAF_TARGET)"
-    dt=$(awk "BEGIN{printf \"%.1f\", ($vmin+100)/2}")
-    dto=$(awk "BEGIN{printf \"%.1f\", (100-$vmin)/2}")
+    # dynamic-crf's normal target+tolerance search (reliable). A tiny tolerance
+    # (default 1.5) makes it settle just above the target = smallest file at ~that
+    # quality. A wide band trips a dcrf bug that returns crf=0, so keep it narrow.
     dcrf_args=( -a optimize -i src.mkv -o out.mp4
-        -targetvmaf "$dt" -tolerance "$dto"
+        -targetvmaf "$(cfg VMAF_TARGET)" -tolerance "$(cfg TOLERANCE)"
         -initialcrf "$(cfg INITIAL_CRF)" -mincrf "$(cfg MIN_CRF)" -maxcrf "$(cfg MAX_CRF)"
         -codec "$CODEC" )
     [[ "${HEIGHT:-0}" -gt 0 ]] && dcrf_args+=( -h "$HEIGHT" )
-    st_set phase str "Searching"; st_set step str "VMAF >= $vmin"
-    jlog "SEARCH VMAF minimum $vmin (accept band $vmin-100), CRF best=$(cfg MAX_CRF)..worst=$(cfg MIN_CRF), codec=$CODEC"
+    st_set phase str "Searching"; st_set step str "VMAF target $(cfg VMAF_TARGET)"
+    jlog "SEARCH VMAF target $(cfg VMAF_TARGET) +/-$(cfg TOLERANCE), CRF best=$(cfg MAX_CRF)..worst=$(cfg MIN_CRF), codec=$CODEC"
 
     dynamic-crf "${dcrf_args[@]}" 2>&1 | {
         phase=search; iter=0; base_pct=25; span=30; enc=0; last=0; fcrf=0; fvmaf=0

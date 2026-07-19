@@ -25,7 +25,7 @@
       - CPU only : leave Extra Parameters empty
   </Overview>
   <Category>MediaApp:Video Tools:</Category>
-  <WebUI>http://[IP]:[PORT:8080]/</WebUI>
+  <WebUI>http://[IP]:[PORT:4805]/</WebUI>
   <Icon>https://raw.githubusercontent.com/turkushan490/gm-encoder/main/docs/logo.svg</Icon>
   <ExtraParams>--runtime=nvidia --device /dev/dri:/dev/dri/</ExtraParams>
   <PostArgs/>
@@ -33,7 +33,7 @@
   <DonateLink/>
 
   <!-- ================= WEB GUI ================= -->
-  <Config Name="Web GUI port" Target="8080" Default="8080" Mode="tcp" Description="Open http://UNRAID-IP:PORT for the control panel (settings, live progress, manual encode, pause/stop)." Type="Port" Display="always" Required="true" Mask="false"/>
+  <Config Name="Web GUI port" Target="4805" Default="4805" Mode="tcp" Description="Open http://UNRAID-IP:PORT for the control panel (settings, live progress, manual encode, pause/stop)." Type="Port" Display="always" Required="true" Mask="false"/>
 
   <!-- ================= PATHS ================= -->
   <Config Name="Input share" Target="/input" Default="/mnt/user/media/GM-Encoder/encode_in" Mode="rw" Description="Drop videos here to encode (scanned recursively)." Type="Path" Display="always" Required="true" Mask="false"/>

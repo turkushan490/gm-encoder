@@ -10,7 +10,7 @@ from urllib.parse import urlparse, parse_qs
 CONFIG_DIR = os.environ.get("CONFIG_DIR", "/config")
 INPUT_DIR  = os.environ.get("INPUT_DIR", "/input")
 OUTPUT_DIR = os.environ.get("OUTPUT_DIR", "/output")
-PORT       = int(os.environ.get("GUI_PORT", "8080"))
+PORT       = int(os.environ.get("GUI_PORT", "4805"))
 WEBUI_DIR  = "/app/webui"
 
 SETTINGS = os.path.join(CONFIG_DIR, "settings.json")
@@ -31,7 +31,7 @@ SCHEMA = [
       "hevc_vaapi","av1_vaapi","h264_vaapi","libx265","libsvtav1","libx264"], "auto"),
     ("FAMILY", "Family (nvidia/intel/amd/cpu/auto)", "select", ["hevc","av1","h264"], "hevc"),
     ("OPTIMIZE", "Optimize (VMAF search)", "select", ["true","false"], "true"),
-    ("VMAF_TARGET", "VMAF minimum (accept >= this)", "number", None, "93"),
+    ("VMAF_TARGET", "VMAF target quality", "number", None, "93"),
     ("INITIAL_CRF", "Initial CRF", "number", None, "22"),
     ("MIN_CRF", "Min CRF (worst)", "number", None, "28"),
     ("MAX_CRF", "Max CRF (best)", "number", None, "18"),
@@ -232,6 +232,21 @@ class H(BaseHTTPRequestHandler):
         if path == "/api/log":
             n = int((q.get("lines", ["200"])[0]))
             return self._send(200, {"lines": [l.rstrip("\n") for l in tail(LOGFILE, n)]})
+        if path == "/api/logfile":
+            if not os.path.isfile(LOGFILE):
+                return self._send(404, {"error": "no log"})
+            try:
+                with open(LOGFILE, "rb") as f:
+                    data = f.read()
+                self.send_response(200)
+                self.send_header("Content-Type", "text/plain; charset=utf-8")
+                self.send_header("Content-Disposition", 'attachment; filename="gm-encoder.log"')
+                self.send_header("Content-Length", str(len(data)))
+                self.end_headers()
+                self.wfile.write(data)
+            except (BrokenPipeError, ConnectionResetError):
+                pass
+            return
         if path == "/api/history":
             n = int((q.get("limit", ["50"])[0]))
             return self._send(200, {"history": history_recent(n)})

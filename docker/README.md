@@ -5,7 +5,7 @@ the input share (or pick it in the browser) → it finds the optimal CRF for you
 target → encodes → remuxes all original audio/subtitle/attachment/chapter streams →
 writes to the output share.
 
-**Web control panel** at `http://<server-ip>:8080` — live progress bar, CPU/GPU
+**Web control panel** at `http://<server-ip>:4805` — live progress bar, CPU/GPU
 meters, current queue, recent completed, a full settings editor (applies live, no
 restart) and manual "encode this file now" + Pause/Stop. The watch-folder keeps
 running alongside it.
@@ -35,7 +35,7 @@ running alongside it.
 
 ## Web control panel
 
-Open `http://<server-ip>:8080`:
+Open `http://<server-ip>:4805`:
 
 - **Now encoding** — current file, phase (scene detect → sample → search → encode →
   mux), a smooth progress bar, plus **CPU** and **GPU** meters.
