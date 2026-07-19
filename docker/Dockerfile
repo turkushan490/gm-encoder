@@ -34,7 +34,9 @@ FROM debian:bookworm-slim
 
 # BtbN static ffmpeg (GPL) bundles: libvmaf, libx264, libx265, libsvtav1,
 # nvenc (ffnvcodec), vaapi and qsv (libvpl). One tarball, everything included.
-ARG FFMPEG_URL=https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-linux64-gpl.tar.xz
+# NOTE: use the n7.1 RELEASE build, not master. master needs NVENC API 13.1
+# (NVIDIA driver 610+); n7.1 works with the drivers the Unraid Nvidia plugin ships.
+ARG FFMPEG_URL=https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-n7.1-latest-linux64-gpl-7.1.tar.xz
 
 # non-free needed for Intel iHD (newer QSV). mesa-va-drivers covers AMD VAAPI.
 # bookworm-slim ships the deb822 debian.sources (with Signed-By), so enable the

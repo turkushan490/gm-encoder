@@ -27,14 +27,20 @@ detect_codec() {
     cpu_for_family "$fam"
 }
 RESOLVED=""; RES_FAM=""
-apply_codec() {   # sets global CODEC honouring auto + FAMILY, exports it
-    local want fam; want="$(cfg CODEC)"; fam="$(cfg FAMILY)"
-    if [[ "${want,,}" == "auto" ]]; then
-        if [[ -z "$RESOLVED" || "$RES_FAM" != "$fam" ]]; then
-            RESOLVED="$(detect_codec "$fam")"; RES_FAM="$fam"; jlog "AUTO  -> $RESOLVED"
-        fi
-        CODEC="$RESOLVED"
-    else CODEC="$want"; fi
+apply_codec() {   # sets global CODEC from Codec(+Family) choice, exports it
+    local want fam; want="$(cfg CODEC | tr 'A-Z' 'a-z')"; fam="$(cfg FAMILY | tr 'A-Z' 'a-z')"
+    [[ -z "$fam" ]] && fam=hevc
+    case "$want" in
+        auto)          if [[ -z "$RESOLVED" || "$RES_FAM" != "$fam" ]]; then
+                           RESOLVED="$(detect_codec "$fam")"; RES_FAM="$fam"; jlog "AUTO  -> $RESOLVED"
+                       fi
+                       CODEC="$RESOLVED" ;;
+        nvidia|nvenc)  CODEC="${fam}_nvenc" ;;
+        intel|qsv)     CODEC="${fam}_qsv" ;;
+        amd|vaapi)     CODEC="${fam}_vaapi" ;;
+        cpu)           CODEC="$(cpu_for_family "$fam")" ;;
+        *)             CODEC="$want" ;;    # explicit encoder id (e.g. hevc_nvenc)
+    esac
     export CODEC
     st_set resolved_codec str "$CODEC"
 }
