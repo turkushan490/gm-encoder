@@ -63,7 +63,8 @@
   <Config Name="File stable (s)" Target="FILE_STABLE_SECONDS" Default="20" Description="Wait this long after the last write before encoding (avoids partial copies)." Type="Variable" Display="advanced" Required="false" Mask="false"/>
   <Config Name="Scan existing on start" Target="SCAN_EXISTING" Default="true|false" Description="Process files already present when the container starts." Type="Variable" Display="advanced" Required="false" Mask="false"/>
   <Config Name="Input extensions" Target="INPUT_EXTENSIONS" Default="mp4,mkv,mov,avi,m4v,webm,ts,wmv,flv" Description="Comma-separated list of file types to watch." Type="Variable" Display="advanced" Required="false" Mask="false"/>
-  <Config Name="VAAPI render device" Target="VAAPI_DEVICE" Default="/dev/dri/renderD128" Description="Only for *_vaapi codecs." Type="Variable" Display="advanced" Required="false" Mask="false"/>
+  <Config Name="VAAPI render device" Target="VAAPI_DEVICE" Default="/dev/dri/renderD128" Description="For *_vaapi codecs. Auto-falls back to the first real render node if this one is absent (Arc is often renderD129)." Type="Variable" Display="advanced" Required="false" Mask="false"/>
+  <Config Name="LIBVA_DRIVER_NAME" Target="LIBVA_DRIVER_NAME" Default="" Description="Intel/AMD QSV/VAAPI only. iHD = Intel Arc / recent iGPU, radeonsi = AMD. Leave empty to auto-detect. NOTE: pass /dev/dri via --device=/dev/dri in Extra Parameters, NOT as a Path mapping." Type="Variable" Display="advanced" Required="false" Mask="false"/>
 
   <!-- ================= NVIDIA (used with runtime=nvidia) ================= -->
   <Config Name="NVIDIA_VISIBLE_DEVICES" Target="NVIDIA_VISIBLE_DEVICES" Default="all" Description="Your GPU UUID from the Nvidia-Driver plugin page (e.g. GPU-xxxxxxxx-...), or 'all'." Type="Variable" Display="advanced" Required="false" Mask="false"/>

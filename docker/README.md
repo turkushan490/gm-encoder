@@ -199,6 +199,25 @@ machine with Docker, then push to your own registry.
 
 ---
 
+## Intel Arc / QSV / VAAPI — pass /dev/dri as a DEVICE, not a Path
+
+The #1 cause of `Error creating a MFX session: -9`, `No VA display found`, or
+`Device creation failed: -22` is mapping `/dev/dri` as an Unraid **Path/volume**.
+That makes the device *visible* but Docker does **not** grant device access
+(`docker inspect ... .HostConfig.Devices` shows `[]`).
+
+**Fix:** remove any `/dev/dri` Path mapping and instead add to **Extra Parameters**:
+
+```
+--device=/dev/dri
+```
+
+Then set the driver if needed: **Variable** `LIBVA_DRIVER_NAME` = `iHD` (Intel Arc /
+recent iGPU) or `radeonsi` (AMD). The container auto-detects the render node
+(e.g. Arc is usually `renderD129`, not `renderD128`) — check the startup log for
+`GPU device OK: /dev/dri/renderDxxx`. If you instead see
+`GPU node ... is visible but NOT usable`, you're still on a Path mapping.
+
 ## Troubleshooting
 
 - **`encoder 'hevc_qsv' available: NO`** in the log → GPU not passed through. Check

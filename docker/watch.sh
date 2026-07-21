@@ -16,6 +16,13 @@ touch "$PROCESSED" "$FAILED" "$IGNORE" 2>/dev/null || true
 # ---- GPU / codec detection (list-based, like the Windows app) ----
 # NOTE: must ONLY echo the codec on stdout (captured by $(...)); log via >&2.
 cpu_for_family() { case "${1,,}" in av1) echo libsvtav1;; h264) echo libx264;; *) echo libx265;; esac; }
+# Resolve the VAAPI/QSV render node: use VAAPI_DEVICE if it exists, else the first
+# real render node (Arc is often renderD129, not renderD128).
+resolve_vaapi_device() {
+    local d; d="$(cfg VAAPI_DEVICE)"
+    [[ -e "$d" ]] && { echo "$d"; return; }
+    ls /dev/dri/renderD* 2>/dev/null | head -n1
+}
 encoder_listed() { ffmpeg -hide_banner -encoders 2>/dev/null | grep -qE "[[:space:]]${1}[[:space:]]"; }
 detect_codec() {
     # auto never picks VAAPI: it can't run through dynamic-crf's search
@@ -75,6 +82,8 @@ export_settings() {
              INPUT_EXTENSIONS WATCH_ENABLED VAAPI_DEVICE FAMILY; do
         v="$(cfg "$k")"; [[ -n "$v" ]] && export "$k=$v"
     done
+    # point VAAPI_DEVICE at a render node that actually exists (Arc = renderD129)
+    local vd; vd="$(resolve_vaapi_device)"; [[ -n "$vd" ]] && export VAAPI_DEVICE="$vd"
 }
 
 banner() {
@@ -85,6 +94,21 @@ banner() {
     jlog "   ffmpeg=$(ffmpeg -hide_banner -version 2>/dev/null | head -n1)"
     if encoder_listed "$CODEC"; then jlog "   encoder '$CODEC' available: YES"
     else jlog "   encoder '$CODEC' available: NO (check GPU passthrough)"; fi
+    # Intel/AMD (QSV/VAAPI): verify the GPU device is actually usable, not just visible
+    if [[ "$CODEC" == *_qsv || "$CODEC" == *_vaapi ]]; then
+        local vd; vd="$(resolve_vaapi_device)"
+        if [[ ! -e /dev/dri ]]; then
+            jlog "   WARN no /dev/dri in the container -> add '--device=/dev/dri' to Extra Parameters (NOT a Path/volume mapping)."
+        elif [[ -z "$vd" ]]; then
+            jlog "   WARN /dev/dri present but no render node found."
+        elif vainfo --display drm --device "$vd" >/dev/null 2>&1; then
+            jlog "   GPU device OK: $vd (VAAPI/QSV usable)"
+        else
+            jlog "   WARN GPU node $vd is visible but NOT usable. Almost always: /dev/dri was added as a Path/volume."
+            jlog "        FIX: remove that Path mapping and add '--device=/dev/dri' to Extra Parameters."
+            jlog "        Also set -e LIBVA_DRIVER_NAME=iHD (Intel Arc/QSV) or radeonsi (AMD) if needed."
+        fi
+    fi
     [[ "$CODEC" == *_vaapi && "$(cfg OPTIMIZE)" == "true" ]] && jlog "   WARN VAAPI+search is experimental; use OPTIMIZE=false or QSV/CPU"
     jlog "==================================================================="
 }
