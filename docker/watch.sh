@@ -16,12 +16,30 @@ touch "$PROCESSED" "$FAILED" "$IGNORE" 2>/dev/null || true
 # ---- GPU / codec detection (list-based, like the Windows app) ----
 # NOTE: must ONLY echo the codec on stdout (captured by $(...)); log via >&2.
 cpu_for_family() { case "${1,,}" in av1) echo libsvtav1;; h264) echo libx264;; *) echo libx265;; esac; }
-# Resolve the VAAPI/QSV render node: use VAAPI_DEVICE if it exists, else the first
-# real render node (Arc is often renderD129, not renderD128).
+# Pick the render node that can actually ENCODE the target family. On a mixed box
+# (e.g. Intel i5 iGPU = renderD128 + Arc A310 = renderD129) the iGPU may only
+# decode AV1, so we probe vainfo for the encode entrypoint and pick the right node.
+vaapi_node_for() {
+    local fam="${1:-hevc}" prof node
+    case "${fam,,}" in
+        av1)  prof='AV1.*EntrypointEnc' ;;
+        h264) prof='H264.*EntrypointEnc' ;;
+        *)    prof='HEVC.*EntrypointEnc' ;;
+    esac
+    for node in $(ls /dev/dri/renderD* 2>/dev/null); do
+        vainfo --display drm --device "$node" 2>/dev/null | grep -Eq "$prof" && { echo "$node"; return; }
+    done
+}
+RESOLVED_VAAPI=""; RESOLVED_VAAPI_FAM="__none__"
 resolve_vaapi_device() {
-    local d; d="$(cfg VAAPI_DEVICE)"
-    [[ -e "$d" ]] && { echo "$d"; return; }
-    ls /dev/dri/renderD* 2>/dev/null | head -n1
+    local fam; fam="$(cfg FAMILY)"
+    [[ "$RESOLVED_VAAPI_FAM" == "$fam" && -n "$RESOLVED_VAAPI" ]] && { echo "$RESOLVED_VAAPI"; return; }
+    local node want; want="$(cfg VAAPI_DEVICE)"
+    node="$(vaapi_node_for "$fam")"                       # encode-capable node
+    [[ -z "$node" && -e "$want" ]] && node="$want"         # else the configured one
+    [[ -z "$node" ]] && node="$(ls /dev/dri/renderD* 2>/dev/null | head -n1)"  # else first
+    RESOLVED_VAAPI="$node"; RESOLVED_VAAPI_FAM="$fam"
+    echo "$node"
 }
 encoder_listed() { ffmpeg -hide_banner -encoders 2>/dev/null | grep -qE "[[:space:]]${1}[[:space:]]"; }
 detect_codec() {
@@ -102,11 +120,16 @@ banner() {
         elif [[ -z "$vd" ]]; then
             jlog "   WARN /dev/dri present but no render node found."
         elif vainfo --display drm --device "$vd" >/dev/null 2>&1; then
-            jlog "   GPU device OK: $vd (VAAPI/QSV usable)"
+            jlog "   GPU device OK: $vd (can encode $(cfg FAMILY))"
         else
             jlog "   WARN GPU node $vd is visible but NOT usable. Almost always: /dev/dri was added as a Path/volume."
             jlog "        FIX: remove that Path mapping and add '--device=/dev/dri' to Extra Parameters."
             jlog "        Also set -e LIBVA_DRIVER_NAME=iHD (Intel Arc/QSV) or radeonsi (AMD) if needed."
+        fi
+        if [[ "$CODEC" == *_qsv && "$(ls /dev/dri/renderD* 2>/dev/null | wc -l)" -gt 1 ]]; then
+            jlog "   NOTE multiple GPUs found. QSV uses the FIRST Intel GPU and can't target a specific one."
+            jlog "        If that GPU can't encode this codec (e.g. an iGPU can't encode AV1), use the matching *_vaapi"
+            jlog "        codec instead -> it targets the encode-capable node ($vd)."
         fi
     fi
     [[ "$CODEC" == *_vaapi && "$(cfg OPTIMIZE)" == "true" ]] && jlog "   WARN VAAPI+search is experimental; use OPTIMIZE=false or QSV/CPU"
