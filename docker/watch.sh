@@ -32,7 +32,15 @@ vaapi_node_for() {
 }
 RESOLVED_VAAPI=""; RESOLVED_VAAPI_FAM="__none__"
 resolve_vaapi_device() {
-    local fam; fam="$(cfg FAMILY)"
+    # derive the family from the actual codec (av1_qsv -> av1) so an explicit
+    # codec picks the node that can encode IT, not just the Family setting
+    local fam
+    case "${CODEC:-}" in
+        av1_*)  fam=av1 ;;
+        hevc_*) fam=hevc ;;
+        h264_*) fam=h264 ;;
+        *)      fam="$(cfg FAMILY)" ;;
+    esac
     [[ "$RESOLVED_VAAPI_FAM" == "$fam" && -n "$RESOLVED_VAAPI" ]] && { echo "$RESOLVED_VAAPI"; return; }
     local node want; want="$(cfg VAAPI_DEVICE)"
     node="$(vaapi_node_for "$fam")"                       # encode-capable node
@@ -216,8 +224,8 @@ banner
 
 first_pass=1
 while true; do
-    export_settings
     apply_codec
+    export_settings
     st_set watch_enabled str "$(cfg WATCH_ENABLED)"
 
     # hold off while the GPU is busy (only relevant for hardware encoders)

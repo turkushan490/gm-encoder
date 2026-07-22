@@ -34,8 +34,14 @@ crfVal := strconv.Itoa(e.cfg.VideoCRF)
 			case "hevc_nvenc", "h264_nvenc", "av1_nvenc":
 				args = append(args, "-rc", "vbr", "-cq", crfVal, "-b:v", "0")
 			case "hevc_qsv", "h264_qsv":
+				if d := os.Getenv("VAAPI_DEVICE"); d != "" {
+					args = append(args, "-qsv_device", d)
+				}
 				args = append(args, "-global_quality", crfVal)
 			case "av1_qsv":
+				if d := os.Getenv("VAAPI_DEVICE"); d != "" {
+					args = append(args, "-qsv_device", d)
+				}
 				args = append(args, "-global_quality", strconv.Itoa(e.cfg.VideoCRF*5))
 			case "hevc_vaapi", "h264_vaapi":
 				args = append(args, "-rc_mode", "CQP", "-qp", crfVal)

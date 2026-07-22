@@ -113,8 +113,8 @@ else
     case "$CODEC" in
         hevc_nvenc|h264_nvenc)  cargs=( -c:v "$CODEC" -preset p5 -tune hq -rc vbr -cq "$q" -b:v 0 -multipass fullres -spatial_aq 1 ) ;;
         av1_nvenc)              cargs=( -c:v av1_nvenc -preset p6 -rc vbr -cq "$q" -b:v 0 -multipass fullres ) ;;
-        hevc_qsv|h264_qsv)      cargs=( -c:v "$CODEC" -global_quality "$q" ) ;;
-        av1_qsv)                cargs=( -c:v av1_qsv -global_quality "$((q*5))" ) ;;
+        hevc_qsv|h264_qsv)      cargs=( -c:v "$CODEC" -qsv_device "$VAAPI_DEVICE" -global_quality "$q" ) ;;
+        av1_qsv)                cargs=( -c:v av1_qsv -qsv_device "$VAAPI_DEVICE" -global_quality "$((q*5))" ) ;;
         hevc_vaapi|h264_vaapi)  cargs=( -c:v "$CODEC" -rc_mode CQP -qp "$q" ) ;;
         av1_vaapi)              cargs=( -c:v av1_vaapi -rc_mode CQP -qp "$((q*5))" ) ;;
         libsvtav1)              cargs=( -c:v libsvtav1 -preset 6 -crf "$q" ) ;;
