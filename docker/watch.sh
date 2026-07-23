@@ -135,9 +135,18 @@ banner() {
             jlog "        Also set -e LIBVA_DRIVER_NAME=iHD (Intel Arc/QSV) or radeonsi (AMD) if needed."
         fi
         if [[ "$CODEC" == *_qsv && "$(ls /dev/dri/renderD* 2>/dev/null | wc -l)" -gt 1 ]]; then
-            jlog "   NOTE multiple GPUs found. QSV uses the FIRST Intel GPU and can't target a specific one."
-            jlog "        If that GPU can't encode this codec (e.g. an iGPU can't encode AV1), use the matching *_vaapi"
-            jlog "        codec instead -> it targets the encode-capable node ($vd)."
+            jlog "   NOTE multiple GPUs found. QSV targets the render node in VAAPI_DEVICE ($vd) via -qsv_device."
+            jlog "        If QSV still fails on an Arc, the *_vaapi codec is the proven fallback (same node)."
+        fi
+        # QSV needs the oneVPL GPU runtime (libmfx-gen) on top of the iHD driver.
+        # Without it the libvpl dispatcher fails with 'MFX session: -9'.
+        if [[ "$CODEC" == *_qsv ]]; then
+            if ls /usr/lib/*/libmfx-gen.so.* /usr/lib/libmfx-gen.so.* >/dev/null 2>&1; then
+                jlog "   QSV runtime OK: oneVPL GPU runtime (libmfx-gen) present"
+            else
+                jlog "   WARN QSV runtime (libmfx-gen / oneVPL) NOT found -> av1_qsv will fail with 'MFX session: -9'."
+                jlog "        Update to the latest image, or use the *_vaapi codec instead."
+            fi
         fi
     fi
     [[ "$CODEC" == *_vaapi && "$(cfg OPTIMIZE)" == "true" ]] && jlog "   WARN VAAPI+search is experimental; use OPTIMIZE=false or QSV/CPU"

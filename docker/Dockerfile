@@ -41,6 +41,11 @@ ARG FFMPEG_URL=https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ff
 # non-free needed for Intel iHD (newer QSV). mesa-va-drivers covers AMD VAAPI.
 # bookworm-slim ships the deb822 debian.sources (with Signed-By), so enable the
 # extra components IN that file rather than adding a conflicting second source.
+#
+# QSV on Intel Arc / Gen12+ (e.g. av1_qsv) needs the oneVPL *GPU runtime*
+# (libmfx-gen1.2) on top of the iHD VAAPI driver - without it ffmpeg's libvpl
+# dispatcher cannot create an MFX session and fails with "MFX session: -9".
+# libvpl2 is the dispatcher; libmfx-gen1.2 is the actual Arc runtime.
 RUN set -eux; \
     if [ -f /etc/apt/sources.list.d/debian.sources ]; then \
         sed -i 's/^Components: main/Components: main contrib non-free non-free-firmware/' \
@@ -53,7 +58,8 @@ RUN set -eux; \
     apt-get install -y --no-install-recommends \
         ca-certificates curl xz-utils tzdata gosu \
         python3 jq procps mediainfo \
-        libva2 vainfo va-driver-all mesa-va-drivers intel-media-va-driver-non-free; \
+        libva2 vainfo va-driver-all mesa-va-drivers intel-media-va-driver-non-free \
+        libvpl2 libmfx-gen1.2; \
     rm -rf /var/lib/apt/lists/*
 
 # Install ffmpeg + ffprobe from the static build

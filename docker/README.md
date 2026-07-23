@@ -201,6 +201,10 @@ machine with Docker, then push to your own registry.
 
 ## Intel Arc / QSV / VAAPI — pass /dev/dri as a DEVICE, not a Path
 
+The image bundles the Intel **oneVPL GPU runtime** (`libmfx-gen`) so `*_qsv`
+(incl. `av1_qsv`) works on Arc / Gen12+, and the iHD + mesa VAAPI drivers for
+`*_vaapi`. The startup log prints `QSV runtime OK` when the runtime is found.
+
 The #1 cause of `Error creating a MFX session: -9`, `No VA display found`, or
 `Device creation failed: -22` is mapping `/dev/dri` as an Unraid **Path/volume**.
 That makes the device *visible* but Docker does **not** grant device access
