@@ -136,6 +136,16 @@ ENV \
     UMASK=022 \
     TZ=Etc/UTC
 
+# Image metadata + Unraid icon/webui labels so the logo and WebUI link travel
+# WITH the image (they show even when the container is added straight from the
+# GHCR repository, without importing the template).
+LABEL org.opencontainers.image.title="GM-Encoder" \
+      org.opencontainers.image.description="VMAF-targeted video encoder (dynamic-crf + ffmpeg) with a web GUI and watch-folder. NVENC/QSV/VAAPI/CPU." \
+      org.opencontainers.image.source="https://github.com/turkushan490/gm-encoder" \
+      org.opencontainers.image.licenses="MIT" \
+      net.unraid.docker.icon="https://raw.githubusercontent.com/turkushan490/gm-encoder/main/docs/logo.svg" \
+      net.unraid.docker.webui="http://[IP]:[PORT:4805]/"
+
 EXPOSE 4805
 VOLUME ["/input", "/output", "/config"]
 
