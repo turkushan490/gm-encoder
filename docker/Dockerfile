@@ -30,16 +30,22 @@ RUN CGO_ENABLED=0 GOFLAGS=-mod=mod go build -o /out/dynamic-crf ./cmd/... \
 
 
 # -------- Stage 2: runtime --------
-FROM debian:bookworm-slim
+# Debian TRIXIE (13), not bookworm: the BtbN ffmpeg links libva at runtime from
+# the OS, and recent builds call vaMapBuffer2 (libva >= 2.21 / VA-API 1.21).
+# bookworm only has libva 2.17 -> every *_vaapi encode crashes with
+# "undefined symbol: vaMapBuffer2". trixie ships libva ~2.22, a current iHD
+# driver and a current oneVPL runtime - what an Intel Arc (Gen12+) needs.
+FROM debian:trixie-slim
 
-# BtbN static ffmpeg (GPL) bundles: libvmaf, libx264, libx265, libsvtav1,
-# nvenc (ffnvcodec), vaapi and qsv (libvpl). One tarball, everything included.
+# BtbN ffmpeg (GPL) bundles: libvmaf, libx264, libx265, libsvtav1, nvenc
+# (ffnvcodec), and the vaapi/qsv *encoders* - but libva and the Intel oneVPL
+# GPU runtime are loaded from the OS at runtime (hence the trixie base above).
 # NOTE: use the n7.1 RELEASE build, not master. master needs NVENC API 13.1
 # (NVIDIA driver 610+); n7.1 works with the drivers the Unraid Nvidia plugin ships.
 ARG FFMPEG_URL=https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-n7.1-latest-linux64-gpl-7.1.tar.xz
 
-# non-free needed for Intel iHD (newer QSV). mesa-va-drivers covers AMD VAAPI.
-# bookworm-slim ships the deb822 debian.sources (with Signed-By), so enable the
+# non-free needed for Intel iHD (QSV/VAAPI). mesa-va-drivers covers AMD VAAPI.
+# trixie-slim ships the deb822 debian.sources (with Signed-By), so enable the
 # extra components IN that file rather than adding a conflicting second source.
 #
 # QSV on Intel Arc / Gen12+ (e.g. av1_qsv) needs the oneVPL *GPU runtime*
