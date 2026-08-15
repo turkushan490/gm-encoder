@@ -49,7 +49,16 @@ resolve_vaapi_device() {
     RESOLVED_VAAPI="$node"; RESOLVED_VAAPI_FAM="$fam"
     echo "$node"
 }
-encoder_listed() { ffmpeg -hide_banner -encoders 2>/dev/null | grep -qE "[[:space:]]${1}[[:space:]]"; }
+# Cache the encoder list once, then match against the cached string. Piping
+# ffmpeg straight into `grep -q` under `set -o pipefail` is unreliable: grep
+# short-circuits on the first match, ffmpeg dies of SIGPIPE, and the pipeline
+# returns non-zero -> a FALSE "encoder NOT available" (and, in AUTO, a wrong
+# fall-back to CPU even though the GPU encoder is present). Caching avoids that.
+FF_ENCODERS=""
+encoder_listed() {
+    [[ -n "$FF_ENCODERS" ]] || FF_ENCODERS="$(ffmpeg -hide_banner -encoders 2>/dev/null)"
+    grep -qE "[[:space:]]${1}[[:space:]]" <<<"$FF_ENCODERS"
+}
 detect_codec() {
     # auto never picks VAAPI: it can't run through dynamic-crf's search
     # (no hwupload wiring) and doesn't exist on NVIDIA. nvenc -> qsv -> CPU.
@@ -141,10 +150,13 @@ banner() {
         # QSV needs the oneVPL GPU runtime (libmfx-gen) on top of the iHD driver.
         # Without it the libvpl dispatcher fails with 'MFX session: -9'.
         if [[ "$CODEC" == *_qsv ]]; then
-            if ls /usr/lib/*/libmfx-gen.so.* /usr/lib/libmfx-gen.so.* >/dev/null 2>&1; then
+            # compgen returns non-zero (not an error) when a glob has no match,
+            # unlike `ls <literal-unmatched-glob>` which fails even if another
+            # argument DID match -> that gave a false "NOT found" on trixie.
+            if compgen -G "/usr/lib/*/libmfx-gen.so.*" >/dev/null || compgen -G "/usr/lib/libmfx-gen.so.*" >/dev/null; then
                 jlog "   QSV runtime OK: oneVPL GPU runtime (libmfx-gen) present"
             else
-                jlog "   WARN QSV runtime (libmfx-gen / oneVPL) NOT found -> av1_qsv will fail with 'MFX session: -9'."
+                jlog "   WARN QSV runtime (libmfx-gen / oneVPL) NOT found -> *_qsv will fail with 'MFX session: -9'."
                 jlog "        Update to the latest image, or use the *_vaapi codec instead."
             fi
         fi
