@@ -33,16 +33,14 @@ crfVal := strconv.Itoa(e.cfg.VideoCRF)
 			switch e.cfg.VideoCodec {
 			case "hevc_nvenc", "h264_nvenc", "av1_nvenc":
 				args = append(args, "-rc", "vbr", "-cq", crfVal, "-b:v", "0")
-			case "hevc_qsv", "h264_qsv":
+			case "hevc_qsv", "h264_qsv", "av1_qsv":
+				// QSV global_quality (ICQ) is a CRF-like scale (~15-40, lower=
+				// better) for ALL codecs incl AV1 - NOT crf*5, which lands off
+				// the scale (gq 90-110) and yields ~vmaf 52. Map crf 1:1.
 				if d := os.Getenv("VAAPI_DEVICE"); d != "" {
 					args = append(args, "-qsv_device", d)
 				}
 				args = append(args, "-global_quality", crfVal)
-			case "av1_qsv":
-				if d := os.Getenv("VAAPI_DEVICE"); d != "" {
-					args = append(args, "-qsv_device", d)
-				}
-				args = append(args, "-global_quality", strconv.Itoa(e.cfg.VideoCRF*5))
 			case "hevc_vaapi", "h264_vaapi":
 				args = append(args, "-rc_mode", "CQP", "-qp", crfVal)
 			case "av1_vaapi":
