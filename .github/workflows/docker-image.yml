@@ -1,6 +1,7 @@
 name: Build & publish Docker image
 
-# Publishes ghcr.io/turkushan490/gm-encoder so Unraid can pull it.
+# Publishes ghcr.io/turkushan490/gm-encoder so Unraid can pull it, and the same image to
+# Docker Hub once the DOCKERHUB_USERNAME / DOCKERHUB_TOKEN secrets are set.
 on:
   push:
     branches: [ main ]
@@ -16,6 +17,9 @@ jobs:
     permissions:
       contents: read
       packages: write
+    env:
+      # Also publish to Docker Hub (Unraid Community Apps counts downloads there).
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
     steps:
       - uses: actions/checkout@v4
 
@@ -26,11 +30,21 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Log in to Docker Hub
+        # Only once the DOCKERHUB_USERNAME / DOCKERHUB_TOKEN secrets exist.
+        if: env.DOCKERHUB_USERNAME != ''
+        uses: docker/login-action@v3
+        with:
+          username: ${{ env.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
       - name: Docker meta
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ghcr.io/${{ github.repository_owner }}/gm-encoder
+          images: |
+            ghcr.io/${{ github.repository_owner }}/gm-encoder
+            name=docker.io/${{ env.DOCKERHUB_USERNAME }}/gm-encoder,enable=${{ env.DOCKERHUB_USERNAME != '' }}
           tags: |
             type=raw,value=latest,enable={{is_default_branch}}
             type=ref,event=tag
