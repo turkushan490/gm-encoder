@@ -99,14 +99,15 @@ Default settings: VMAF target 93, tolerance 1.5, CRF range 18-28, output as MKV 
 ```
 gm-encoder/
 ├── gm-encoder.ps1                 # Main GUI source (inline XAML + event wiring)
-├── build-exe.ps1               # Bundles modules + ps2exe → gm-gui.exe
+├── build-exe.ps1               # Bundles modules + ps2exe → gm-encoder.exe (shipped as gm-gui.exe)
 ├── install-dynamic-crf.bat     # Installer + Go source patches
 ├── reinstall-dynamic-crf.bat   # Convenience: delete exe + reinstall
 ├── generate-handover.ps1       # Generates PROJECT-HANDOVER.md for AI context handover
 ├── gui/
 │   ├── Encoder.psm1            # Per-file encoding pipeline (probe, hardlink, run dcrf, post-mux, cleanup)
 │   └── _job-kill-on-close.ps1  # Win32 Job Object: child ffmpeg dies when GUI exits
-└── archive/                    # Old CLI scripts (pre-GUI, kept for reference)
+├── docker/                     # Docker / Unraid edition (watch-folder + web GUI)
+└── templates/                  # Unraid Community Apps template
 ```
 
 See [PROJECT-HANDOVER.md](PROJECT-HANDOVER.md) for a full architectural overview suitable for AI context transfer.

@@ -1,5 +1,6 @@
-# Build artifacts
+# Build artifacts (build-exe.ps1 -> gm-encoder.exe; released as gm-gui.exe)
 gm-encoder.exe
+gm-gui.exe
 gm-encoder-bundled.ps1
 gm-encoder-error.log
 debug-bundled.ps1
@@ -20,13 +21,6 @@ temp/
 # Generated handover docs (regen via generate-handover.ps1)
 PROJECT-HANDOVER.md
 PROJECT-HANDOVER-COMPACT.md
-
-# Archive: keep scripts (history reference), skip video outputs + rar bundle
-archive/*/output/
-archive/**/*.rar
-archive/**/*.mkv
-archive/**/*.mp4
-archive/**/*.mov
 
 # Local snapshots / test copies
 glm/

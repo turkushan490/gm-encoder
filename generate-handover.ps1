@@ -59,8 +59,7 @@ C:\ai code\asa\
 ├── gui\
 │   ├── Encoder.psm1            # Encoding engine module (called from GUI or CLI)
 │   └── _job-kill-on-close.ps1  # Win32 Job Object so child ffmpeg dies when GUI exits
-├── input\ output\ temp\        # Working dirs
-└── archive\                    # Old scripts/output from previous iterations
+└── input\ output\ temp\        # Working dirs
 ```
 
 ## Critical patches applied to dynamic-crf
@@ -129,7 +128,7 @@ cd "C:\ai code\asa"
 
 ## Recent change log (chronological)
 
-1. Built initial multi-step CLI pipeline (batch-*.bat files calling _*.ps1 helpers, archived in `archive\pre-gui-*`).
+1. Built initial multi-step CLI pipeline (batch-*.bat files calling _*.ps1 helpers; since removed - see git history).
 2. Created WPF GUI replacing CLI bats.
 3. Fixed Windows path issues in dynamic-crf (cambi stub + scene-detect escape).
 4. Added codec-aware quality flags (AMF qp scaling, NVENC cq, QSV global_quality).
@@ -146,7 +145,7 @@ cd "C:\ai code\asa"
 
 # Append source files
 $files = if ($Compact) {
-    # Skip install-dynamic-crf.bat (23 KB), run.bat, reinstall, archive script
+    # Skip install-dynamic-crf.bat (23 KB), run.bat, reinstall
     @(
         @{ Path = 'gm-encoder.ps1';                Lang = 'powershell' }
         @{ Path = 'gui/Encoder.psm1';           Lang = 'powershell' }
@@ -162,7 +161,6 @@ $files = if ($Compact) {
         @{ Path = 'install-dynamic-crf.bat';    Lang = 'batch' }
         @{ Path = 'run.bat';                    Lang = 'batch' }
         @{ Path = 'reinstall-dynamic-crf.bat';  Lang = 'batch' }
-        @{ Path = 'archive-pre-gui.ps1';        Lang = 'powershell' }
     )
 }
 
